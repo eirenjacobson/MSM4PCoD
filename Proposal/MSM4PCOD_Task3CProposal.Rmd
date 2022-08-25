@@ -1,0 +1,100 @@
+---
+title: "MSM4PCoD Task 3C"
+author: "Eiren Jacobson"
+date: "1/19/2022"
+output: pdf_document
+bibliography: MSM4PCoD.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(knitr)
+```
+
+## Summary
+
+The objective of MSM4PCoD Task 3C is to investigate methods for improving precision of parameter estimates (and hence power to detect declines)  without greatly increasing spending (i.e., more “bang for the buck”) by combining multiple data sources (e.g. passive acoustic monitoring, telemetry, photo-ID, photogrammetry). 
+
+To do this, we propose to develop a spatial population model for Cuvier's beaked whales in the California Current Ecosystem. We would the simulate disturbance resulting from Naval sonar activities at specific spatial locations. We could then explore the effects of different levels of disturbance on overall trends in the population and evaluate the sensitivity of the model to changes in assumptions about life-history traits, dispersal, and effects of disturbance. Finally, we would simulate different types of data collection and evaluate what combinations of survey types and frequencies would be most effective for detecting declines.
+
+## Spatial Population Model
+
+### Spatial distribution and large-scale abundance
+
+- I envision dividing the large study area into grid cells and running population models in each cell, with redistribution of individuals each year according to spatial models of density. Carrying capacity and/or vital rates could vary spatially. We could then investigate how low carrying capacity or a vital rate like fecundity would have to be in an area like the Southern California Bight in order for it to act as a sink for the larger population.
+
+- We plan to use the spatial distribution of Cuvier's beaked whales in the CCE, as estimated using habitat models, to initialize the model, to inform dispersal and redistribution within the model (via gradients of habitat suitability), and to control carrying capacity (i.e., not all individuals can exist in the same place). 
+
+- Alternatively, we could use an abstracted, hypothetical density surface for model development (as in Boyd and Punt [-@boyd_shifting_2021]).  
+
+- Visual line-transect and passive acoustic surveys are conducted throughout the CCE and have produced abundance estimates and density surface maps  [@becker_habitat-based_2020; @barlow_acoustic-based_2020]. I plan to contact Elizabeth, Karin, Jay, and Jeff to see what else (if anything) is in the works for Cuvier's in the CCE.  
+
+- Key predictors of small beaked whale guild distribution [@becker_habitat-based_2020] include latitude/longitude, depth, SST, and distance to shelf edge.  
+
+- Distribution varies between survey years; a composite distribution is shown in Fig. 1, though we may wish to use only the most recent years, given estimates of overall population decline.  
+
+- CVs associated with density estimates (Fig. 1, right panel) could be used to allow for variability in population distribution/redistribution between years and/or between realizations of the simulation. 
+
+- The most recent estimate of Cuvier's beaked whale abundance in the CCE [@barlow_acoustic-based_2020] is 5,454 individuals (95% credibility intervals: 3,151 to 8,907).
+
+- The most recent visual survey based estimate of Zc abundance is 3,274 for 2014 [@moore_population_2017].
+
+- A previous study has suggested large-scale decline in Cuvier's beaked whale abundance in the CCE between 1991 and 2008 [@moore_declining_2013-1]
+
+- The SOAR population represents approximately 2\% of the total CCE population; however, it is unclear how connected the population is. For some cetaceans, the Mendocino Ridge forms a porous boundary between subpopulations; we might consider using this or a similar oceanographic boundary to define a smaller study area.
+
+- There is evidence from long-term acoustic monitoring that Cuvier's beaked whale abundance varies seasonally at SOAR [@baumann-pickering_modeling_2014]. We might consider picking a single season to base the model on. 
+
+--> Density surfaces specific to Cuvier's beaked whales (i.e., excluding other small beaked whales) would be useful.
+
+```{r, out.width = '80%', fig.align='center', fig.cap = "Becker et al. species distribution model for the small beaked whale guild."}
+
+include_graphics("./Figures/BeckerEtAl_SmallBeakedWhaleSDM.png")
+
+```
+
+### Mechanistic population model
+
+- A mechanistic population model would use estimates of life-history traits like fecundity and survival to project changes in population size. Such a model would be age or stage structured.  
+
+- This type of model would be computer-intensive, since it would model individual animals across a spatial grid.  
+
+- An alternative to using a mechanistic population model is to use a statistical population model, where population growth is determined by a single rate parameter [e.g., @boyd_estimation_2018] This approach would not incorporate estimates of survival and fecundity. 
+
+- Photographic mark-recapture studies at SOAR have resulted in estimates of survival, population growth, and abundance of Cuvier's beaked whales [@curtis_abundance_2021].
+
+- Curtis et al. [-@curtis_abundance_2021] used mark-recapture data collected between 2007 and 2018 and found that that the Cuvier's beaked whale population at SOAR is likely to be stable or decreasing slowly (mean of 0.8% annual decrease, 95\% CI -5.6\%-4.1\%).
+
+- Curtis et al. also estimated apparent adult survival of 0.950 (0.899–0.986), proportion of calves of 6\% (95\% CI 3.7%-9.5%). 
+
+--> Survival, population size, calf indices etc. derived from data collected post-2018 would be useful
+
+--> Estimates of vital rates for Zc elsewhere, including at "undisturbed" locations would be useful 
+
+## Dispersal and redistribution
+
+- Boyd et al. [-@boyd_estimation_2018] provide a case study for an integrated population redistribution model using an ideal free redistribution process, which doesn't impose any distance-based restrictions. 
+
+- There are other, more sophisticated methods for simulating dispersal while maintaining density surfaces (Michelot, Joy).
+
+--> Information on home ranges, evidence of transience, distance traveled within years (from tag data) would be useful.
+
+## Disturbance 
+
+- We could simulate disturbance either by reducing carrying capacity or reducing fecundity (fmax).
+
+- Disturbance is most likely to impact fetus and calf survival [@new_using_2013-1]
+
+- King et al. [-@king_interim_2015] scale disturbance with number of days, and relate that to fecundity, calf survival, and juvenile survival. We could do something similar, relating the number of sonar days to the level of disturbance.
+
+## Surveys
+
+- We could simulate line-transect and mark-recapture surveys a la Boyd and Punt [-@boyd_shifting_2021].
+
+- This would build on the work that Curtis et al. [-@curtis_abundance_2021] have already published.
+
+--> Would be useful to know current, planned, and maximum feasible frequency of mark-recapture studies.  
+
+## References
+

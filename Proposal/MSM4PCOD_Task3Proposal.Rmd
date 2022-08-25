@@ -1,0 +1,87 @@
+---
+fontsize: 12pt
+header-includes:
+  - \usepackage{setspace}
+title: "MSM4PCOD Task 3"
+author: "Eiren Jacobson"
+date: "11/8/2021"
+output: pdf_document
+bibliography: MSM4PCoD.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(knitr)
+```
+
+\onehalfspace
+
+## Original Proposal for Task 3
+
+### A. Scenario development
+Goal: Develop realistic scenarios of effect size, precision/variability and effort/sample size (using current and realistic future single-modality data collection methods) for populations of interest.  These scenarios will form the basis of the power calculations. 
+Scenarios: Long-term declines in abundance and scenarios of changes in demographic parameters provided by Task 2; sudden declines (relevant to early warning detection).
+
+### B. Power calculations
+Goal: Calculate power for given scenarios using density, demographic parameters and metrics suggested by Task 2 
+Methods: Monte Carlo simulations using generalised population models for two populations of interest.
+
+### C. Methods for improving precision of effect estimates
+Goal: Investigate methods for improving precision of parameter estimates (and hence power to detect declines)  without greatly increasing spending (i.e., more “bang for the buck”) by combining multiple data sources (e.g. passive acoustic monitoring, telemetry, photo-ID, photogrammetry).
+Methods: 1. Review potential for combining data sources to better estimate single parameters – e.g., combining telemetry and photo-ID data in spatial capture-recapture models to estimate survival. 2. Develop an integrated population model (as in Jacobson et al. 2020) for the Cuvier’s beaked whale population at SOCAL and fit this to multiple data sources (e.g. telemetry, photo-ID, passive acoustics) to better estimate parameters and identify efficient monitoring approaches.
+
+## Case Studies
+
+- Cape Hatteras (Cuvier's beaked whale, short-finned pilot whale)
+- Southern California (Cuvier's beaked whale)
+- Hawaii (Short-finned pilot whale, False killer whale, Blainville’s beaked whale, Cuvier’s beaked whale)
+
+## Suggested Approach for Parts A and B
+
+- Develop scenarios and conduct power analyses for multiple species/regions
+- Megsie Siple's new package mmrefpoints (https://github.com/mcsiple/mmrefpoints) could be useful for scenario development
+- Authier et al. [-@authier_power_2020] provides useful guidance about power anaylses for cetaceans with code and data
+
+## Suggested Approach for Part C
+
+- Focus on a single species/region for integrated modelling (C above)
+- Suggest Cuvier's beaked whale in Southern California as focal species/region
+- There are multiple types of data available for this species and location covering over several decades (Fig. 1)
+
+```{r, out.width = '80%', fig.align='center', fig.cap = "Diagram of data collected at SOAR provided by Megan Ryder"}
+
+include_graphics("./Figures/SOARDataAvailability.png")
+
+```
+
+- I am most interested in investigating how data can be integrated across these spatial scales to improve inference about the population-level consequences of local disturbance 
+- Research in this region falls broadly into two categories: large-scale (California Current Ecosystem; e.g. Fig. 2) and small-scale (localized to the Southern California Bight, and the SOAR range in particular; e.g., Fig. 3)
+- Visual line-transect and passive acoustic surveys are conducted throughout the CCE and have produced abundance estimates and density surface maps  [@becker_habitat-based_2020, @barlow_acoustic-based_2020]. I would plan to contact Elizabeth, Karin, Jay, and Jeff to see what else (if anything) is in the works for Cuvier's in the CCE.
+- A previous study has suggested large-scale decline in Cuvier's beaked whale abundance in the CCE between 1991 and 2008 [@moore_declining_2013-1]
+- Photographic mark-recapture studies at SOAR have resulted in estimates of survival, population growth, and abundance of Cuvier's beaked whales [@curtis_abundance_2021]
+- Curtis et al. found that that the Cuvier's beaked whale population at SOAR is likely to be stable or decreasing slowly (mean of 0.8% annual decrease)
+- The SOAR population represents approximately 2\% of the total CCE population; however, it is unclear how connected the population is. For some cetaceans, the Mendocino Ridge forms a porous boundary between subpopulations; we might consider using this or a similar oceanographic boundary to define a smaller study area.
+- Unfortunately I am not aware of any recent systematic data collection South of the U.S./Mexico border, so we may need to assume that that border is the edge of the population.
+- There is evidence from long-term acoustic monitoring that Cuvier's beaked whale abundance varies seasonally at SOAR [@baumann-pickering_modeling_2014].
+- I suggest building an integrated population model that links small and large-scale population processes and conducting population viability analysis-type simulations to investigate the impacts of different types/levels (scenarios) of disturbance.
+- I envision dividing the large study area into grid cells and running population models in each cell, with redistribution of individuals each year according to  spatial models of density [Fig. 2, @becker_habitat-based_2020]. Vital rates and population growth rates could vary spatially. We could then investigate how low population growth rate would have to be in an area like the Southern California Bight in order for it to become a sink for the larger population.
+- Boyd et al. [-@boyd_estimation_2018] provide a case study for an integrated population redistribution model. I'm not sure whether we have enough information about the dynamics of Cuvier's beaked whale habitat preferences to construct something quite so complex, but we might be able to borrow/simplify methods nonetheless.
+- Similarly, Boyd et al. [-@boyd_shifting_2021] would be a perfect template if we thought that the mark-recapture data collected at SOAR were representative of the larger study area. 
+- Ultimately, the proposed research project will probably help identify the greatest sources of uncertainty in evaluating the population consequences of disturbance at SOAR for the larger population of Cuvier's beaked whales, and would hopefully result in recommendations for future data collection (e.g., collecting photo-id data at a reference site). 
+
+```{r, out.width = '80%', fig.align='center', fig.cap = "Becker et al. species distribution model for small beaked whale guild"}
+
+include_graphics("./Figures/BeckerEtAl_SmallBeakedWhaleSDM.png")
+
+```
+
+```{r, out.width = '80%', fig.align='center', fig.cap = "Curtis et al. map of SOAR relative to Southern California"}
+
+include_graphics("./Figures/CurtisEtAl_ZcPhotoIDatSOAR.png")
+
+```
+
+\newpage
+
+## References

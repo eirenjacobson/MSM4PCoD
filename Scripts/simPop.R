@@ -1,5 +1,6 @@
 
 # Function to generate Ziphiid-ish population
+# Operates by COHORTS
 # Last modified by EKJ 2022-08-17
 
 simPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95, 
@@ -34,7 +35,7 @@ simPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95,
       
       N <- matrix(rep(NA, nyears*AMAX), ncol=AMAX) # population matrix
 
-      P <- rep(NA, x) 
+      P <- rep(NA, AMAX) 
       P[1] <- 1
       P[2] <- S0
       for (i in 3:(AJU-1)){
@@ -61,7 +62,6 @@ simPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95,
     
     for (t in 1:(nyears-1)){
       ft <- (f0 + (fmax-f0)*(1-(sum(N[t, 2:AMAX])/K)^z)) # fec at t
-      print(ft)
       N[t+1, 1] <- sum(N[t, AFR:AMAX])*ft # calves
       for (a in 2:AMAX){
         N[t+1, a] <- N[t, a-1]*S[a-1] # juv and adult 
