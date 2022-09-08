@@ -1,15 +1,12 @@
 
-redistributePop <- function(Za, Zb, Ka, Kb, c = 1){
+redistributePop <- function(Za, Zb, Ka, Kb, c = 1, A = 3:10){
   
   # function to redistribute whales between two populations
   # Individual based
-# TODO -->  # Na and Nb are row vectors of population structure at some time t
-# Need to change this to take Za and Zb, and move individuals between them
   # Ka and Kb are the carrying capacities that Na and Nb are redistributing to
   # c is the degree of connectivity (0 = isolated, 1 = ideal free redistribution)
-  
   # A is a vector of ages eligible for redistribution (typically juv/subadults)
-  A = 3:10
+
   
   # How many animals are in each population?
   Na <- sum(Za[,ncol(Za)])
@@ -19,22 +16,20 @@ redistributePop <- function(Za, Zb, Ka, Kb, c = 1){
   NKa <- Na/Ka
   NKb <- Nb/Kb
   
-  
   NKt <- (Na+Nb)/(Ka+Kb) # target ratio
-  
-  # something wrong here -- Nma and Nmb should be the same but opposite signs
   
   Nma <- round((NKt*Ka) - Na) # how many animals need to move from a under IFR
   Nmb <- round((NKt*Kb) - Nb) # how many animals need to move from b under IFR
   
-  if(Nma == Nmb){ #if the ratios are even, no movement happens
+  
+  if(Nma == -1*Nmb){ #if the ratios are even, no movement happens
     Za_new <- Za
     Zb_new <- Zb
   } else {
     
   # negative indicates animals need to *leave* that region
   
-  if(Nma < 0){
+  if(Nma < 0 | Nmb > 0){
     
     # find out which individuals are eligible to move
     Na_alive <- which(Za[,ncol(Za)] == 1)
@@ -56,7 +51,7 @@ redistributePop <- function(Za, Zb, Ka, Kb, c = 1){
   } # end if Nma < 0
   
   
-  if(Nmb < 0){
+  if(Nmb < 0 | Nma > 0){
     
     # find out which individuals are eligible to move
     Nb_alive <- which(Zb[,ncol(Zb)] == 1)
