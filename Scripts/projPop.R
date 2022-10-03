@@ -42,7 +42,10 @@ projPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95,
     
     nalive <- sum(Z[,t]) - ncalves # 1+ at time t
     ncalves <- 0 # reset calf counter
-    ft <- (f0 + (fmax-f0)*(1-(nalive/K)^z)) # fec at t
+    ft <- f0 + (fmax-f0)*(1-(nalive/K)^z) # fec at t
+    # Keep ft from becoming negative 
+    # TODO: is this the correct formulation for ft?
+    ifelse(ft<0, ft <- 0, ft <- ft)
     
     for (i in 1:nrow(Z)){ # loop over each individual
       

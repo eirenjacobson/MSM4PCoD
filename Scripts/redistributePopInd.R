@@ -20,9 +20,8 @@ redistributePop <- function(Za, Zb, Ka, Kb, c = 1, A = 3:10){
   
   Nma <- round((NKt*Ka) - Na) # how many animals need to move from a under IFR
   Nmb <- round((NKt*Kb) - Nb) # how many animals need to move from b under IFR
-  
-  
-  if(Nma == -1*Nmb){ #if the ratios are even, no movement happens
+
+  if((Nma + Nmb)==1){ #if the ratios are even, no movement happens
     Za_new <- Za
     Zb_new <- Zb
   } else {
@@ -44,9 +43,13 @@ redistributePop <- function(Za, Zb, Ka, Kb, c = 1, A = 3:10){
         ifelse(rbinom(n = 1, size = 1, prob = pmove_a), Na_move <- c(Na_move, Na_available[i]), Na_move <- Na_move)
       } # end for i
     } # end else
-     
+    if(length(Na_move) == 0){
+      Za_new <- Za
+      Zb_new <- Zb
+    } else{
+    # move entries in z matrix 
     Za_new <- Za[-Na_move,]
-    Zb_new <- rbind(Zb, Za[Na_move,])
+    Zb_new <- rbind(Zb, Za[Na_move,])}
     
   } # end if Nma < 0
   
@@ -66,9 +69,12 @@ redistributePop <- function(Za, Zb, Ka, Kb, c = 1, A = 3:10){
         ifelse(rbinom(n = 1, size = 1, prob = pmove_b), Nb_move <- c(Nb_move, Nb_available[i]), Nb_move <- Nb_move)
       } # end for i
     } # end else
-    
+    if(length(Nb_move) == 0){
+      Za_new <- Za
+      Zb_new <- Zb
+    } else {
     Zb_new <- Zb[-Nb_move,]
-    Za_new <- rbind(Za, Zb[Nb_move,])
+    Za_new <- rbind(Za, Zb[Nb_move,])}
     
   } # end if Nmb < 0
   
