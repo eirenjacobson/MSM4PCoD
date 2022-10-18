@@ -7,6 +7,8 @@ projPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95,
                    AFR = 10, AJU = 3, ASA = 5, AMAX = 50,
                    fmax = 0.2, K = 1000, nyears = 1, Zinit = NA){
   
+  
+  library(stringi)
   # S0 = calf survival
   # S1 = juvenile survival
   # S2 = subadult and adult survival
@@ -31,7 +33,7 @@ projPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95,
   
   # generate a Z matrix with the initial individuals in the upper left
   Z <- matrix(data = rep(0, length = (ncol(Zinit)+nyears)*nrow(Zinit)), 
-              ncol = ncol(Zinit)+nyears, nrow = nrow(Zinit))
+              ncol = ncol(Zinit)+nyears, nrow = nrow(Zinit), dimnames = list(dimnames(Zinit)[[1]]))
   Z[1:nrow(Zinit), 1:ncol(Zinit)] <- Zinit
   
   # initialize number of calves from Zinit
@@ -65,7 +67,8 @@ projPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95,
     if (ncalves == 0) next else{
       
     # add calves to the bottom
-    newrows = matrix(data = rep(0, times = ncalves*ncol(Z)), nrow = ncalves)
+    newrows = matrix(data = rep(0, times = ncalves*ncol(Z)), nrow = ncalves,
+                     dimnames = list(stri_rand_strings(n = ncalves, length = 10)))
     newrows[,(t+1)] <- 1
     Z <- rbind(Z, newrows)} # end else
     

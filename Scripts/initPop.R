@@ -59,7 +59,8 @@ initPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95,
     
     # now set up a matrix of Nind x Nyears
     
-    Zinit <- matrix(nrow = sum(N[nyears,]), ncol = max(which(N[nyears,] > 0)))
+    Zinit <- matrix(nrow = sum(N[nyears,]), ncol = max(which(N[nyears,] > 0)),
+                   dimnames = list(stri_rand_strings(n = sum(N[nyears,]), length = 10)))
     
     c <- 1
     for (a in 1:ncol(Zinit)){
@@ -69,7 +70,6 @@ initPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95,
         c <- c+1
       } 
     }
-    
     
     return(Zinit)
     

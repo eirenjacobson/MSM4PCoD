@@ -21,7 +21,7 @@ redistributePop <- function(Za, Zb, Ka, Kb, c = 1, A = 3:10){
   Nma <- round((NKt*Ka) - Na) # how many animals need to move from a under IFR
   Nmb <- round((NKt*Kb) - Nb) # how many animals need to move from b under IFR
 
-  if((Nma + Nmb)==1){ #if the ratios are even, no movement happens
+  if((Nma + Nmb) == 1 | Nma + Nmb == 0){ #if the ratios are even, no movement happens
     Za_new <- Za
     Zb_new <- Zb
   } else {
