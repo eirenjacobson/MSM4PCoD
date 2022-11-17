@@ -48,12 +48,12 @@ include_graphics("./Figures/ExScenarioC.png")
 - simCapRecap.R: parameters include survey years, effort (relative to current effort?), and capture probability
 - simLineTransect.R: parameters include survey years, effort (relative to current effort?), 
 - JS v CJS, think about whether to use the capture recapture data to estimate N and survival?
-
+- Think about adding in acoustic survey simulation, long-term trend in GVPs, fixed
 
 ## Task 3: Model 
 
 - The integrated population model will be written in Nimble. 
-- It will take the structure 
+ 
 
 
 ## Ideas for Future Expansion

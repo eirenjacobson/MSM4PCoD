@@ -6,13 +6,58 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
+
+library(knitr)
 ```
-Metapopulations of marine mammals where disturbance and sampling are not uniformly distributed. 
 
-How should we collect data to maximize the ability to detect declines?
+In this project, we are interested in detecting trends in metapopulations of marine mammals where disturbance and sampling may not be uniformly distributed. How should we collect data to maximize the ability to detect declines? We propose to investigate this question using a simulation tool. Briefly, the simulation includes population simulation via a stage-specific population model, data generation via simulated line-transect and capture-recapture surveys, and trend analysis via an integrated population model. In this phase of MSM4PCoD, we plan to simulate a hypothetical population similar to Zc in SoCal as a case study, with the eventual goal of building a framework that could be adapted for any species/region/scenario.
 
-We propose to investigate this question using a simulation tool (an R package and/or Shiny app).
+## Task 1: Population Simulation
+
+- The population simulation takes a simple two-box structure. 
+- Each "box" represents part of a metapopulation with its own carrying capacity and internal dynamics. 
+- The script initPop.R initializes a population, given parameters S0 (calf survival), S1 (juvenile survival), S2 (subadult and adult survival), AFR (age at first reproduction), AJU (age at which become juvenile subject to S1), ASA (age at which become subadult subject to S2), fmax (maximum fecundity), K (carrying capacity), nyears (number of years to run to get stable age dist), and z (degree of compensation).
+- projPop.R takes the output of initPop.R and projects the populations forward in time, according to the above parameters plus the number of years to project.
+- redistributePop.R then evaluates the ratio of N/K in each of the two population areas and moves individuals (tracked using unique IDs) between areas. Movement of individuals between boxes is allowed when the ratio of N/K is not equal across boxes and only specified age classes can move between boxes.
+- The simulation assumes that the animals do not correctly perceive the habitat quality; i.e., N/K is evaluated based on starting K, if K changes, it is assumed that the animals are not responding to this.
+- However, population dynamics do respond to the new K.
+- This is called an ecological trap.
+- Scenarios include a) two stable populations, b) one stable and one decreasing population, and c) two decreasing populations.
+
+```{r, out.width = '75%', fig.align = 'center'}
+
+include_graphics("./Figures/ExScenarioA.png")
+
+```
+
+```{r, out.width = '75%', fig.align='center'}
+
+include_graphics("./Figures/ExScenarioB.png")
+
+```
+
+```{r, out.width = '75%', fig.align = 'center'}
+
+include_graphics("./Figures/ExScenarioC.png")
+
+```
+
+## Task 2: Survey Simulation
+
+- simCapRecap.R: parameters include survey years, effort (relative to current effort?), and capture probability
+- simLineTransect.R: parameters include survey years, effort (relative to current effort?), 
+- JS v CJS, think about whether to use the capture recapture data to estimate N and survival?
+
+
+## Task 3: Model 
+
+- The integrated population model will be written in Nimble. 
+- It will take the structure 
+
+
+## Ideas for Future Expansion
+
 Users could specify study area size and current density (or density surface).
 We could include options for a mechanistic (i.e., using life-history parameters to run population models) or empirical (i.e., fixed % change over time) 
 The tool could include default settings for different life history types (as in mmrefpoints)

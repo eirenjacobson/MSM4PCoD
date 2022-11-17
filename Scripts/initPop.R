@@ -1,13 +1,12 @@
 
 # Function to initialize a population at carrying capacity
 # fecundity and survival are stochastic
-# returns a vector of # of individuals in each age class
-# last modified by EKJ 2022-08-23
+# returns a Z matrix of individuals alive at year 50
+# last modified by EKJ 2022-11-17
 
 initPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95, 
                    AFR = 10, AJU = 3, ASA = 5, AMAX = 50,
-                   fmax = 0.2, K = 1000, nyears = 100){
-  
+                   fmax = 0.2, K = 100, nyears = 100){
   # S0 = calf survival
   # S1 = juvenile survival
   # S2 = subadult and adult survival
@@ -64,11 +63,21 @@ initPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95,
     
     c <- 1
     for (a in 1:ncol(Zinit)){
+      if(N[nyears,a] == 0){next} else{
       for (i in 1:N[nyears,a]){
         Zinit[c, 1:(ncol(Zinit)-a)] <- 0
         Zinit[c, (ncol(Zinit)-a+1):ncol(Zinit)] <- 1
         c <- c+1
       } 
+      }}
+    
+    # in case no ind alive at year 50 are 50 years old
+    # add some padding zeroes to the beginning of the matrix
+    # to maintain compatibility with other pops
+    if(ncol(Zinit < 51)){
+      ac <- 51 - ncol(Zinit) 
+      Zinit <- cbind(matrix(rep(0, nrow(Zinit)*ac), ncol = ac), Zinit)
+      
     }
     
     return(Zinit)
