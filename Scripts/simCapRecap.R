@@ -4,7 +4,7 @@
 simCapRecap <- function(Zmat, Pcap){
   
   # Zmat is the population matrix with nrow individuals and nyear columns
-  # Pcap is the capture probability
+  # Pcap is the capture probability 
 
   alive <- Zmat[which(Zmat[,ncol(Zmat)] == 1),]
   

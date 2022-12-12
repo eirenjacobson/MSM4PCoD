@@ -2,8 +2,8 @@
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(nimble)
 ####
-
 
 source("./Scripts/initPop.R")
 source("./Scripts/projPop.R")
@@ -16,11 +16,10 @@ source("./Scripts/simLineTransect.R")
 nyears <- 100
 set.c <- 1
 caprecapyrs <- 40:60
-linetransyrs <- seq(40, 60, by = 4)
+linetransyrs <- seq(2,99, by = 1)
 
 Area_A <- 2500
 Area_B <- 2500
-
 
 LT_A <- 50
 LT_B <- 50
@@ -67,8 +66,9 @@ for (t in 1:nyears){
       caprecap <- data.frame("ID" =simCapRecap(Zmat = Zb_tplus1, Pcap = 0.1),
                              "Year" = t, "Cap" = 1)
     } else {
-    caprecap <- rbind.data.frame(caprecap, data.frame("ID" =simCapRecap(Zmat = Zb_tplus1, Pcap = 0.1),
-                                                      "Year" = t, "Cap" = 1))}
+    caprecap <- rbind.data.frame(caprecap, 
+                                 data.frame("ID" =simCapRecap(Zmat = Zb_tplus1, Pcap = 0.1),
+                                            "Year" = t, "Cap" = 1))}
   } # end caprecap
 
   if (t %in% linetransyrs){
@@ -99,3 +99,41 @@ ggplot(N) +
   geom_line(aes(x=Year, y = K, color = Region), linetype = "dashed") +
   xlim(50, 150) +
   theme_bw()
+
+
+###################
+
+source("./Scripts/nimbleIPM.R")
+source("./Scripts/simPop.R")
+
+Ndefault <- simPop(K = 1000, new = TRUE, nyears = 100)
+
+nimbleData <- list(ltestN = Nhat$Nhat, ltestSD = rep(10, length(Nhat$Year)))
+
+nimbleConstants <- list(cyear = 50, nyears = 100, S0 = 0.8, S1 = 0.85, AFR = 10,
+                        AJU = 3, ASA = 5, AMAX = 50, fmax = 0.2, nyears = 100, 
+                        z = 2.39, nltyears = length(Nhat$Year), ltyears = Nhat$Year) # degree of compensation
+
+nimbleInits <- list(S2 = 1, K1 = 500, K2 = 500, N = Ndefault)
+
+
+
+
+
+
+nimbleParams <- list("S2", "K1", "K2", "trueN")
+
+set.seed(20220401) 
+
+model <- nimbleModel(code = ipm,
+                     constants = nimbleConstants,
+                     data = nimbleData,
+                     inits = nimbleInits,
+                     check = FALSE)
+
+
+# Run the model
+nimbleOut <- nimbleMCMC(model, #constants = nimbleData, inits = nimbleInits,
+                        monitors = nimbleParams, 
+                        thin = 10, niter = 1000, nburnin = 500, nchains = 4)
+

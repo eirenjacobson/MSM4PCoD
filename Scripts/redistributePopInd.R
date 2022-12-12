@@ -7,7 +7,6 @@ redistributePop <- function(Za, Zb, Ka, Kb, c = 1, A = 3:10){
   # c is the degree of connectivity (0 = isolated, 1 = ideal free redistribution)
   # A is a vector of ages eligible for redistribution (typically juv/subadults)
 
-  
   # How many animals are in each population?
   Na <- sum(Za[,ncol(Za)])
   Nb <- sum(Zb[,ncol(Zb)])
@@ -52,7 +51,6 @@ redistributePop <- function(Za, Zb, Ka, Kb, c = 1, A = 3:10){
     Zb_new <- rbind(Zb, Za[Na_move,])}
     
   } # end if Nma < 0
-  
   
   if(Nmb < 0 | Nma > 0){
     

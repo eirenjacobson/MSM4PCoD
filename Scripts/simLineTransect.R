@@ -1,5 +1,5 @@
 
-simLineTransect <- function(N, L, A, ESHW = 2, Tdist = 4, g0 = 0.55){
+simLineTransect <- function(N, L, A, ESHW = 2, g0 = 0.55){
   
   # Inputs
   # N: total (true) number of animals in the study area

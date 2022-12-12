@@ -1,5 +1,5 @@
 ---
-title: "MSM4PCOD Task 3C Outline"
+title: "MSM4PCOD Task 3C"
 author: "Eiren Jacobson"
 date: "18/10/2022"
 output: pdf_document
@@ -11,110 +11,89 @@ knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
 ```
 
-In this project, we are interested in detecting trends in metapopulations of marine mammals where disturbance and sampling may not be uniformly distributed. How should we collect data to maximize the ability to detect declines? We propose to investigate this question using a simulation tool. Briefly, the simulation includes population simulation via a stage-specific population model, data generation via simulated line-transect and capture-recapture surveys, and trend analysis via an integrated population model. In this phase of MSM4PCoD, we plan to simulate a hypothetical population similar to Zc in SoCal as a case study, with the eventual goal of building a framework that could be adapted for any species/region/scenario.
+In this project, we are interested in detecting trends in metapopulations of marine mammals where disturbance and sampling may not be uniformly distributed. How should we collect data to maximize the ability to detect declines? We propose to investigate this question using a simulation tool. Briefly, the simulation includes population simulation via an individual-based population model, data generation via simulated line-transect, capture-recapture, and passive acoustic surveys, and trend analysis via an integrated population model. As a case study, we simulate a hypothetical metapopulation loosely based on Cuvier's beaked whales (Ziphius cavirostris) in Southern California, with the eventual goal of building a framework that could be adapted for any species/region/scenario.
 
-## Task 1: Population Simulation
+## Task 3C.1: Population Simulation
 
-- The population simulation takes a simple two-box structure. 
-- Each "box" represents part of a metapopulation with its own carrying capacity and internal dynamics. 
-- The script initPop.R initializes a population, given parameters S0 (calf survival), S1 (juvenile survival), S2 (subadult and adult survival), AFR (age at first reproduction), AJU (age at which become juvenile subject to S1), ASA (age at which become subadult subject to S2), fmax (maximum fecundity), K (carrying capacity), nyears (number of years to run to get stable age dist), and z (degree of compensation).
-- projPop.R takes the output of initPop.R and projects the populations forward in time, according to the above parameters plus the number of years to project.
-- redistributePop.R then evaluates the ratio of N/K in each of the two population areas and moves individuals (tracked using unique IDs) between areas. Movement of individuals between boxes is allowed when the ratio of N/K is not equal across boxes and only specified age classes can move between boxes.
-- The simulation assumes that the animals do not correctly perceive the habitat quality; i.e., N/K is evaluated based on starting K, if K changes, it is assumed that the animals are not responding to this.
-- However, population dynamics do respond to the new K.
-- This is called an ecological trap.
-- Scenarios include a) two stable populations, b) one stable and one decreasing population, and c) two decreasing populations.
+The population simulation takes a simple two-box structure, meant to emulate a metapopulation with two regions each containing a subpopulation. Each region has its own carrying capacity and internal dynamics, but animals may move between regions (explained below). The populations are assumed to have Pella-Tomlinson type density-dependent fecundity (Brandon et al. 2007). For simplicity, we assume that the two regions are the same size (A = 2,500 km2) and start with the same carrying capacity (K = 100).
 
-```{r, out.width = '75%', fig.align = 'center'}
+The script initPop.R initializes a population, given parameters S0 (calf survival), S1 (juvenile survival), S2 (subadult and adult survival), AFR (age at first reproduction), AJU (age at which become juvenile subject to S1), ASA (age at which become subadult subject to S2), fmax (maximum fecundity), K (initial carrying capacity), and z (degree of compensation for the Pella-Tomlinson response). For the case study, these values are set as detailed in Table 1. 
 
-include_graphics("./Figures/ExScenarioA.png")
+```{r}
 
+t1 <- data.frame("Parameter" = c("S0", "S1", "S2", "AFR", "AJU", "ASA", "AMAX", "fmax", "K"),
+                 "Value" = c(0.8, 0.85, 0.95, 10, 3, 5, 50, 0.2, 100))
+
+kable(t1)
+                 
+                
 ```
 
-```{r, out.width = '75%', fig.align='center'}
+The script projPop.R takes the output of initPop.R and projects the populations forward in time, according to the above parameters plus the number of years to project (here nyears is set to 100). Carrying capacities are set for each year and region, so that disturbance can be simulated in one or both regions. Fecundity and survival are simulated stochastically. Individuals animals are tracked over time (this is necessary for the mark-recapture simulation, explained below).
+
+Density-dependent movement occurs. If the density of animals in one region is higher than the density of animals in another region, some animals will move to the region with lower density. The simulation assumes that the animals do not correctly perceive the habitat quality; i.e., the density each year Nt/K is evaluated based on K in year 1, if K changes, it is assumed that the animals are not aware of this. However, population dynamics (esp. changes in fecundity) do respond to the new K. This is called an ecological trap. For the purposes of the case study, this design is meant to emulate the hypothesized scenario in Southern California, where disturbance due to Naval training and testing is thought to overlap with high-quality habitat. 
+
+Only juvenile animals are allowed to move between regions. The simulation includes a connectivity parameter c that controls how much redistribution of animals occurs. The parameter takes values between 0 and 1. When c = 1, animals redistribute so that the densities in the two regions are equal. When 0 < c < 1, "surplus" animals in one region will move to the other region with probability c. The script redistributePop.R evaluates the ratio of N/K in each of the two regions and moves individuals (tracked using unique IDs) between regions. 
+
+For the case study, we a series of scenarios: one where K is constant across regions and time and others where K decreases in one region but not the other (e.g., by 50\%; Fig. 1).
+
+```{r, out.width = '75%', fig.align='center', fig.cap = "Simulated metapopulation showing number of animals (vertical axis) in each of two subpopulations (red indicates region A, blue indicates region B) over a 100 year period (horizontal axis). The carrying capacity in each region is shown by a dashed line."}
 
 include_graphics("./Figures/ExScenarioB.png")
 
 ```
 
-```{r, out.width = '75%', fig.align = 'center'}
+## Task 3C.2: Survey Simulation
 
-include_graphics("./Figures/ExScenarioC.png")
+We simulate three different types of data collection and analysis: photographic capture-recapture surveys for estimates of adult survival, visual line-transect surveys for estimates of abundance, and fixed passive acoustic monitoring for estimates of abundance. 
 
-```
+The script simCapRecap.R simulates photographic capture-recapture surveys. The surveys are simulated to occur only in the disturbed region (e.g., region B in Fig. 1). Parameters of the simulation include survey years and effort (which affects capture probability). 
 
-## Task 2: Survey Simulation
+TODO: need to get relationship of time spent on the water to capture probability, either from Curtis paper or the last chapter of Dave Moretti's thesis.
 
-- simCapRecap.R: parameters include survey years, effort (relative to current effort?), and capture probability
-- simLineTransect.R: parameters include survey years, effort (relative to current effort?), 
-- JS v CJS, think about whether to use the capture recapture data to estimate N and survival?
-- Think about adding in acoustic survey simulation, long-term trend in GVPs, fixed
+The script simLineTransect.R simulates line-transect surveys with properties similar to line-transect surveys carried out by the SWFSC (Moore and Barlow 2013). Parameters of the simulation include survey years and effort (total length of line transects). It is assumed that the detection function is estimated from data pooled across multiple surveys (not just from the simulated data).
 
-## Task 3: Model 
+TODO: currently simLineTransect includes only binomial variance. Need to fix this to include overdispersion according to Distance book. Should also switch from using length of transect to using CV directly, then explain methods for conversion. 
 
-- The integrated population model will be written in Nimble. 
- 
+TODO: Figure showing estimates from simulated surveys
 
+TODO: Add acoustic survey simulation, add to above figure
+
+TODO: Add juvenile fraction simulation
+
+- TO DISCUSS: how to incorporate information about age classes in integrated population model, i.e., assume that sampled ratio of juveniles to adults is representative? Something about number of new animals entering the catalog?
+
+## Task 3C.3: Integrated Population Model 
+
+We constructed an integrated population model to jointly analyze multiple simulated datasets. 
+
+The integrated population model is implemented in Nimble. 
+
+TODO: model DAG
+
+TODO: second version of the model where metapopulation structure is known
+
+TODO: Nimble: can you compile a model before you show it any data? This would make the simulation process faster because you wouldn't need to recompile the model
+
+TODO: quantification of power, histogram/density plot of estimated trends would be more informative (where power would just be the proportion of those trends that are on the right side of zero)
+
+TODO: Look at new IPM book, look into efficient JS
 
 ## Ideas for Future Expansion
 
-### Possibly part of another task (Megan power analyses)?
-Phase 1: Population model via empirical growth, data generation based on representative CVs, joint trend analysis via log-linear regression
-
 - Could introduce environmental variation, fluctuation in carrying capacity from year to year
-- TO DO: look into literature on trends being decomposed into environmental variability and measurement error
 - Squid fishery or CalCOFI data on variability/fluctuations as indicator of environmental variability? E.g., percentage change in carrying capacity from year to year?
-- For more complex scenario, crank up/down migration parameters
-- Matthiopoulous 2005 grey seals stochastic movement/migration to new areas, metapopulation 
 - Could include any number of survey modalities, each with a frequency/inter-survey-interval and CV associated with resulting estimates of abundance, and where it happens
 - TO DISCUSS: how to simulate e.g., increasing survey effort (e.g., vary CV according to published CVs for survey and species type?) standard dev scales with square root of effort, so CV will as well
-- TO DISCUSS: how to handle surveys that happen only in certain regions
-- Once data collection is simulated, and trend analysis can be conducted with a linear regression, where all datasets share a trend parameter (note could include option to weight different datasets)
 - TODO: re-read Charlotte's paper and see how they did inference on local v regional?
 - TO DISCUSS: Power is defined as the proportion of simulated populations/datasets/trend analyses that result in detecting a trend of the same direction (e.g., positive or negative?) or should it be more strict?
-- Histogram/density plot of estimated trends would be more informative (where power would just be the proportion of those trends that are on the right side of zero)
 
-
-- Geometric mean of the change in population size? time series is the trend?
-- Then look at different effect sizes
-- Is the global trend diff from zero, are either regional trends different from zero, 
-are the regional trends different from each other
-- Maximum likelihood plus error, should be able to come up with an analytic estimate of the 
-overall trend parameter
-- Power analysis on the probability of detecting a trend in each region
-- Could have global trend plus regional? Maybe not Kalman filter-able?
-- Global trend plus trend in region 2 could be the two parameters
-- Could do a parametric bootstrap to get variance, or numerical derivatives plus Sandwich estimator?
-
-
-Phase 2: Data generation via stage-specific population model, data generation via simulated surveys, trend analysis via integrated population model
-
-
-- TO DISCUSS: how to incorporate information about age classes in integrated population model, i.e., assume that sampled ratio of juveniles to adults is representative? Something about number of new animals entering the catalog?
-- use open population capture recapture, estimate N and survival
-- Nimble: can you compile a model before you show it any data? CHECK THIS
-- This would make the simulation process faster because you wouldn't need to recompile the model
-- Could use TMB
-- TMB independence sampler? Importance sampling?
-- Question: do we have to embed analyses within nimble or could we send data to Distance/RMark then put outputs into nimble
-- Incorporate all into Nimble but try to keep simple, efficient
-- Avoid data augmentation, workaround, need to do this more efficiently
-- TODO: Look at new IPM book, look into efficient JS
-
-- Non-independence of ratios (juv/adults) and mark-recapture data
-- Think about how to handle this in the likelihood
+- Could use open population capture recapture, estimate N and survival
+- Non-independence of ratios (juv/adults) and mark-recapture data -- think about how to handle this in the likelihood
 - Can this be built into the likelihood of the capture recapture data, rather than as a separate submodel?
-- Minor issue, not a big deal if we don't solve this
 
 - Could start with Charlotte's model, even though simulation process is different
-- Could we include line-transect density estimates as processed (analyze with Distance), only the mark-recapture model would be in Nimble
-- Could sample distances from a half-normal rather than simulating the locations of individual animals
-- It's only in the mark recapture part that we care about who the animals are
-- P*N, then pull from half-normal (separately for large and small areas) then add together
-
-- Think about whether there will be enough sightings for distance sampling analysis
-- Could add a third box, where animals can't mix but distance sampling still happens
-- Want to end up with simulated CVs that are similar to the current CVs from real data
+- Rather than fixing LT parameters, we could add a third box, where animals can't mix but distance sampling still happens
 
 - Poisson/Binomial approximation of the likelihood? 
 - Might need to artificially inflate this? Simulate overdispersion. 
@@ -122,11 +101,6 @@ Phase 2: Data generation via stage-specific population model, data generation vi
 - Start by simulating individuals, then build up to groups
 - Group size estimation, simulate groups
 - Bernoulli for detecting groups, then likelihood for group size that is poisson or neg bin
-
-- Basic thing should run in a few minutes
-- Want to avoid following a large population 
-
-- Might need to write your own likelihood for JS? 
 
 - Could extend this to spatial capture recapture
 
