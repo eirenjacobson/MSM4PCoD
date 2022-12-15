@@ -59,10 +59,6 @@ TODO: Figure showing estimates from simulated surveys
 
 TODO: Add acoustic survey simulation, add to above figure
 
-TODO: Add juvenile fraction simulation
-
-- TO DISCUSS: how to incorporate information about age classes in integrated population model, i.e., assume that sampled ratio of juveniles to adults is representative? Something about number of new animals entering the catalog?
-
 ## Task 3C.3: Integrated Population Model 
 
 We constructed an integrated population model to jointly analyze multiple simulated datasets. 
@@ -87,26 +83,19 @@ TODO: Look at new IPM book, look into efficient JS
 - TO DISCUSS: how to simulate e.g., increasing survey effort (e.g., vary CV according to published CVs for survey and species type?) standard dev scales with square root of effort, so CV will as well
 - TODO: re-read Charlotte's paper and see how they did inference on local v regional?
 - TO DISCUSS: Power is defined as the proportion of simulated populations/datasets/trend analyses that result in detecting a trend of the same direction (e.g., positive or negative?) or should it be more strict?
-
 - Could use open population capture recapture, estimate N and survival
 - Non-independence of ratios (juv/adults) and mark-recapture data -- think about how to handle this in the likelihood
 - Can this be built into the likelihood of the capture recapture data, rather than as a separate submodel?
-
 - Could start with Charlotte's model, even though simulation process is different
 - Rather than fixing LT parameters, we could add a third box, where animals can't mix but distance sampling still happens
-
 - Poisson/Binomial approximation of the likelihood? 
 - Might need to artificially inflate this? Simulate overdispersion. 
-
 - Start by simulating individuals, then build up to groups
 - Group size estimation, simulate groups
 - Bernoulli for detecting groups, then likelihood for group size that is poisson or neg bin
-
 - Could extend this to spatial capture recapture
-
 - Could use a much simpler observation process if full IPM is too slow
 - Doesn't matter what the data generation process is 
-
 - Lit review 
 
 
