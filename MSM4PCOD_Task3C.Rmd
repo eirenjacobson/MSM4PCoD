@@ -1,7 +1,7 @@
 ---
 title: "MSM4PCOD Task 3C"
 author: "Eiren Jacobson"
-date: "18/10/2022"
+date: "11 January 2023"
 output: pdf_document
 ---
 
@@ -11,7 +11,11 @@ knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
 ```
 
+## Summary
+
 In this project, we are interested in detecting trends in metapopulations of marine mammals where disturbance and sampling may not be uniformly distributed. How should we collect data to maximize the ability to detect declines? We propose to investigate this question using a simulation tool. Briefly, the simulation includes population simulation via an individual-based population model, data generation via simulated line-transect, capture-recapture, and passive acoustic surveys, and trend analysis via an integrated population model. As a case study, we simulate a hypothetical metapopulation loosely based on Cuvier's beaked whales (Ziphius cavirostris) in Southern California, with the eventual goal of building a framework that could be adapted for any species/region/scenario.
+
+**NOTE:** All code is available at https://github.com/eirenjacobson/MSM4PCoD.git
 
 ## Task 3C.1: Population Simulation
 
@@ -35,7 +39,7 @@ Density-dependent movement occurs. If the density of animals in one region is hi
 
 Only juvenile animals are allowed to move between regions. The simulation includes a connectivity parameter c that controls how much redistribution of animals occurs. The parameter takes values between 0 and 1. When c = 1, animals redistribute so that the densities in the two regions are equal. When 0 < c < 1, "surplus" animals in one region will move to the other region with probability c. The script redistributePop.R evaluates the ratio of N/K in each of the two regions and moves individuals (tracked using unique IDs) between regions. 
 
-For the case study, we a series of scenarios: one where K is constant across regions and time and others where K decreases in one region but not the other (e.g., by 50\%; Fig. 1).
+For the case study, we simulate two scenarios: one where K is constant across regions and time and others where K decreases in one region but not the other (e.g., by 50\%; Fig. 1).
 
 ```{r, out.width = '75%', fig.align='center', fig.cap = "Simulated metapopulation showing number of animals (vertical axis) in each of two subpopulations (red indicates region A, blue indicates region B) over a 100 year period (horizontal axis). The carrying capacity in each region is shown by a dashed line."}
 
@@ -55,47 +59,44 @@ The script simLineTransect.R simulates line-transect surveys with properties sim
 
 TODO: currently simLineTransect includes only binomial variance. Need to fix this to include overdispersion according to Distance book. Should also switch from using length of transect to using CV directly, then explain methods for conversion. 
 
-TODO: Figure showing estimates from simulated surveys
-
-TODO: Add acoustic survey simulation, add to above figure
+TODO: Add acoustic survey simulation (need CV estimates from Megan) add to above figure
 
 ## Task 3C.3: Integrated Population Model 
 
-We constructed an integrated population model to jointly analyze multiple simulated datasets. 
+We constructed an integrated population model to jointly analyze multiple simulated datasets. The integrated population model is implemented in Nimble and fit with MCMC. The file nimbleIPM.R contains the model code, while the file runIndSim.R contains code to generate data (as described above) and fit the Nimble model.
 
-The integrated population model is implemented in Nimble. 
+```{r, out.width = '75%', fig.align='center', fig.cap = "Directed acyclic graph of model structure. Parameters are shared between the population process model (central box) and each of the observational submodels (peripheral boxes)."}
 
-TODO: model DAG
+include_graphics("./Figures/pptDAG.png")
+
+```
+
+TODO: re-make model DAG in R 
 
 TODO: second version of the model where metapopulation structure is known
 
-TODO: Nimble: can you compile a model before you show it any data? This would make the simulation process faster because you wouldn't need to recompile the model
+TODO: In Nimble, can you compile a model before you show it any data? This would make the simulation process faster because you wouldn't need to recompile the model
 
 TODO: quantification of power, histogram/density plot of estimated trends would be more informative (where power would just be the proportion of those trends that are on the right side of zero)
 
-TODO: Look at new IPM book, look into efficient JS
+TODO: Look at new IPM book, look into more efficient JS
 
-## Ideas for Future Expansion
 
-- Could introduce environmental variation, fluctuation in carrying capacity from year to year
-- Squid fishery or CalCOFI data on variability/fluctuations as indicator of environmental variability? E.g., percentage change in carrying capacity from year to year?
-- Could include any number of survey modalities, each with a frequency/inter-survey-interval and CV associated with resulting estimates of abundance, and where it happens
-- TO DISCUSS: how to simulate e.g., increasing survey effort (e.g., vary CV according to published CVs for survey and species type?) standard dev scales with square root of effort, so CV will as well
+## Future work and/or for discussion
+
+- Expand simulation to include group size simulation/estimation. Bernoulli for detecting groups, then likelihood for group size that is poisson or negative binomial.
+
+- Could include any number of survey modalities, each with a frequency/inter-survey-interval and CV associated with resulting estimates of abundance, and where it happens.
+
+- Could use open population capture recapture to estimate N and survival.
+
+- When both capture-recapture and fractional information (e.g., calf or juvenile ratio) are used, data will not be independent -- think about whether/how to handle this in the likelihood.
+
+- More complex simulation could introduce environmental variation, fluctuation in carrying capacity from year to year. Squid fishery or CalCOFI data on variability/fluctuations as indicator of environmental variability? E.g., percentage change in carrying capacity from year to year?
+
+- Currently only individuals are detected. Could add group size simulation. Bernoulli for detecting groups, then likelihood for group size that is poisson or neg bin.
+
 - TODO: re-read Charlotte's paper and see how they did inference on local v regional?
-- TO DISCUSS: Power is defined as the proportion of simulated populations/datasets/trend analyses that result in detecting a trend of the same direction (e.g., positive or negative?) or should it be more strict?
-- Could use open population capture recapture, estimate N and survival
-- Non-independence of ratios (juv/adults) and mark-recapture data -- think about how to handle this in the likelihood
-- Can this be built into the likelihood of the capture recapture data, rather than as a separate submodel?
-- Could start with Charlotte's model, even though simulation process is different
-- Rather than fixing LT parameters, we could add a third box, where animals can't mix but distance sampling still happens
-- Poisson/Binomial approximation of the likelihood? 
-- Might need to artificially inflate this? Simulate overdispersion. 
-- Start by simulating individuals, then build up to groups
-- Group size estimation, simulate groups
-- Bernoulli for detecting groups, then likelihood for group size that is poisson or neg bin
-- Could extend this to spatial capture recapture
-- Could use a much simpler observation process if full IPM is too slow
-- Doesn't matter what the data generation process is 
-- Lit review 
+
 
 
