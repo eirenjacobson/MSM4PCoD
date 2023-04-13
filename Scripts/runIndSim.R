@@ -32,8 +32,8 @@ set.seed(20221116)
 
 # Set vector of carrying capacities
 Ka <- rep(100, nyears)
-Kb <- c(rep(100, nyears/2), rep(50, nyears/2))
-
+#Kb <- c(rep(100, nyears/2), rep(50, nyears/2))
+Kb <- Ka
 #plot(x = NA, y = NA, xlim = c(0, 100), ylim = c(-10, 10))
 
 # Set counter for number of animals in each area
@@ -88,17 +88,27 @@ for (t in 1:nyears){
 
 caphist <- caprecap %>% pivot_wider(id_cols = ID, names_from = Year, values_from = Cap)
 
-N <- data.frame("Year" = c(1:ncol(Za_tplus1), 1:ncol(Zb_tplus1)), 
-                "N" = c(colSums(Za_tplus1), colSums(Zb_tplus1)), 
-                "Region" = c(rep("A", ncol(Za_tplus1)), rep("B", ncol(Zb_tplus1))),
-                "K" = c(rep(100, 51), Ka, rep(100, 51), Kb))
+# Note these are the tplus1 matrices, not the Na/Nb matrices
+# N <- data.frame("Year" = c(1:ncol(Za_tplus1), 1:ncol(Zb_tplus1)), 
+#                 "N" = c(colSums(Za_tplus1), colSums(Zb_tplus1)), 
+#                 "Region" = c(rep("A", ncol(Za_tplus1)), rep("B", ncol(Zb_tplus1))),
+#                 "K" = c(rep(100, 51), Ka, rep(100, 51), Kb))
 
+N <- data.frame("Year" = rep(1:nyears, 2),
+                "N" = c(Na_t, Nb_t), 
+                "Region" = c(rep("A", length(Na_t)), rep("B", length(Nb_t))),
+                "K" = c(Ka, Kb))
 
 ggplot(N) +
   geom_line(aes(x=Year, y = N, color = Region)) +
   geom_line(aes(x=Year, y = K, color = Region), linetype = "dashed") +
-  xlim(50, 150) +
-  theme_bw()
+ # xlim(50, 150) +
+  theme_bw() 
+
+N %>% group_by(Year) %>% summarize(Ntot = sum(N)) %>%
+  ggplot()+
+  geom_line(aes(x=Year, y = Ntot))+
+  geom_point(data = Nhat, aes(x=Year, y = Nhat))
 
 
 ###################
@@ -106,7 +116,7 @@ ggplot(N) +
 source("./Scripts/nimbleIPM.R")
 source("./Scripts/simPop.R")
 
-Ndefault <- simPop(K = 1000, new = TRUE, nyears = 100)
+Ndefault <- simPop(K = 225, new = TRUE, nyears = 100)
 
 nimbleData <- list(ltestN = Nhat$Nhat, ltestSD = rep(10, length(Nhat$Year)))
 
@@ -114,12 +124,7 @@ nimbleConstants <- list(cyear = 50, nyears = 100, S0 = 0.8, S1 = 0.85, AFR = 10,
                         AJU = 3, ASA = 5, AMAX = 50, fmax = 0.2, nyears = 100, 
                         z = 2.39, nltyears = length(Nhat$Year), ltyears = Nhat$Year) # degree of compensation
 
-nimbleInits <- list(S2 = 1, K1 = 500, K2 = 500, N = Ndefault)
-
-
-
-
-
+nimbleInits <- list(S2 = 0.95, K1 = 225, K2 = 225, N = round(Ndefault))
 
 nimbleParams <- list("S2", "K1", "K2", "trueN")
 
@@ -130,7 +135,6 @@ model <- nimbleModel(code = ipm,
                      data = nimbleData,
                      inits = nimbleInits,
                      check = FALSE)
-
 
 # Run the model
 nimbleOut <- nimbleMCMC(model, #constants = nimbleData, inits = nimbleInits,

@@ -7,7 +7,7 @@ ipm <- nimbleCode({
   # Priors for parameters to be estimated by the model
   S2 ~ dunif(0,1)
   K1 ~ dunif(175, 225)
-  K2 ~ dunif(125, 175)
+  K2 ~ dunif(175, 225)
   # need recapture probability
   
   
@@ -51,6 +51,7 @@ ipm <- nimbleCode({
   for (t in 1:(nyears-1)){
     ft[t] <- (f0 + (fmax-f0)*(1-(sum(N[t, 2:AMAX])/K[t])^z)) # fec at t
     N[t+1, 1] ~ dbin(ft[t], round(sum(N[t, AFR:AMAX]))) # calves
+    #N[t+1, 1] <- dbinom(1, size = round(sum(N[t, AFR:AMAX])), prob = ft[t])
     for (a in 2:AMAX){
       N[t+1, a] ~ dbin(S[a-1], N[t, a-1]) # juv and adult 
     } # end for a
