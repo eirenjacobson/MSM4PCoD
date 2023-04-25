@@ -3,6 +3,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(nimble)
+library(nimbleEcology)
 ####
 
 source("./Scripts/initPop.R")
@@ -86,7 +87,22 @@ for (t in 1:nyears){
   
 } # end for t
 
-caphist <- caprecap %>% pivot_wider(id_cols = ID, names_from = Year, values_from = Cap)
+caphist <- caprecap %>% 
+  pivot_wider(id_cols = ID, names_from = Year, values_from = Cap, values_fill = 0)
+
+# Process caphist for nimbleIPM
+
+F <- caprecap %>% 
+  group_by(ID) %>% 
+  filter(Year == min(Year)) %>% 
+  ungroup() %>%
+  select(Year) %>% as.vector()
+
+Y <- as.matrix(caphist[,2:ncol(caphist)])
+# take out individuals only seen on last occasion
+Y <- Y[-which(rowSums(Y) == 1 & Y[,21] == 1),]
+
+Zmat <- matrix(rep(0, length(F)*ncol(Y)))
 
 # Note these are the tplus1 matrices, not the Na/Nb matrices
 # N <- data.frame("Year" = c(1:ncol(Za_tplus1), 1:ncol(Zb_tplus1)), 
@@ -118,11 +134,14 @@ source("./Scripts/simPop.R")
 
 Ndefault <- simPop(K = 225, new = TRUE, nyears = 100)
 
-nimbleData <- list(ltestN = Nhat$Nhat, ltestSD = rep(10, length(Nhat$Year)))
+nimbleData <- list(ltestN = Nhat$Nhat, ltestSD = rep(10, length(Nhat$Year)), 
+                   Y = Y)
 
 nimbleConstants <- list(cyear = 50, nyears = 100, S0 = 0.8, S1 = 0.85, AFR = 10,
                         AJU = 3, ASA = 5, AMAX = 50, fmax = 0.2, nyears = 100, 
-                        z = 2.39, nltyears = length(Nhat$Year), ltyears = Nhat$Year) # degree of compensation
+                        z = 2.39, nltyears = length(Nhat$Year), ltyears = Nhat$Year,
+                        PCap = 0.1, ncryears = length(caprecapyrs), Nind = nrow(Y),
+                        Find = F$Year - F$Year[1] + 1)
 
 nimbleInits <- list(S2 = 0.95, K1 = 225, K2 = 225, N = round(Ndefault))
 
@@ -137,7 +156,7 @@ model <- nimbleModel(code = ipm,
                      check = FALSE)
 
 # Run the model
-nimbleOut <- nimbleMCMC(model, #constants = nimbleData, inits = nimbleInits,
+nimbleOut <- nimbleMCMC(model, #constants = nimbleCi, inits = nimbleInits,
                         monitors = nimbleParams, 
                         thin = 10, niter = 1000, nburnin = 500, nchains = 4)
 

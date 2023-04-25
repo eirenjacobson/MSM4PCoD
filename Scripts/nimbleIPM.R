@@ -3,13 +3,10 @@ ipm <- nimbleCode({
   
   # Fixed values
   
-  
   # Priors for parameters to be estimated by the model
   S2 ~ dunif(0,1)
   K1 ~ dunif(175, 225)
   K2 ~ dunif(175, 225)
-  # need recapture probability
-  
   
   # Process model
   
@@ -67,16 +64,11 @@ ipm <- nimbleCode({
     ltestN[t] ~ dnorm(trueN[t], ltestSD[t])
     
   }
+
+  # Capture-recapture process and observation model
   
-  # Capture-recapture observation model
- 
-  
-  #for (t in cryears){
-    
-    
-    
-  #}
-  
-  
-  
+  for (i in 1:Nind){
+    Y[i, Find[i]:ncryears] ~ dCJS_ss(S2, PCap, len = ncryears - Find[i] + 1)
+  }
+
 })
