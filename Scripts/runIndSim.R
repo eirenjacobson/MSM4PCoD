@@ -1,3 +1,6 @@
+runIndSim <- function(nyears, cval, Ka_1, Ka_2, Kb_1, Kb_2, 
+                      linetransyrs, lt_ecv, caprecapyrs, pcap){
+
 ####
 library(dplyr)
 library(tidyr)
@@ -10,32 +13,28 @@ source("./Scripts/initPop.R")
 source("./Scripts/projPop.R")
 source("./Scripts/redistributePopInd.R")
 source("./Scripts/simCapRecap.R")
-source("./Scripts/simLineTransect.R")
+source("./Scripts/simSurvey.R")
 
 ############################
+# 
+# # years to run simulation
+# nyears <- 100
+# # connectivity parameter
+# cval <- 1
+# # years in which capture-recapture surveys happen
+# caprecapyrs <- 40:60
+# # capture probability 
+# pcap <- 0.2
+# # years in which line-transect surveys happen
+# linetransyrs <- 40:60
+# ecv <- 0.2
 
-nyears <- 100
-set.c <- 1
-caprecapyrs <- 40:60
-linetransyrs <- seq(2,99, by = 1)
-
-Area_A <- 2500
-Area_B <- 2500
-
-LT_A <- 50
-LT_B <- 50
-
-ESW <- 2
 
 ############################
-
-set.seed(20221116)
 
 # Set vector of carrying capacities
-Ka <- rep(100, nyears)
-#Kb <- c(rep(100, nyears/2), rep(50, nyears/2))
-Kb <- Ka
-#plot(x = NA, y = NA, xlim = c(0, 100), ylim = c(-10, 10))
+Ka <- c(rep(Kb_1, nyears/2), rep(Kb_2, nyears/2))
+Kb <- c(rep(Kb_1, nyears/2), rep(Kb_2, nyears/2))
 
 # Set counter for number of animals in each area
 Na_t <- rep(NA, nyears)
@@ -51,7 +50,7 @@ for (t in 1:nyears){
     Zb_t <- projPop(Zinit = Zb_tplus1, nyears = 1, K = Kb[t])
   }
   
-  Z_new <- redistributePop(Za = Za_t, Zb = Zb_t, Ka = Ka[t], Kb = Kb[t], c = set.c)
+  Z_new <- redistributePop(Za = Za_t, Zb = Zb_t, Ka = Ka[t], Kb = Kb[t], c = cval)
   # These z-matrices will be the starting point for the next iteration
   Za_tplus1 <- Z_new$Za_new
   Zb_tplus1 <- Z_new$Zb_new
@@ -64,26 +63,22 @@ for (t in 1:nyears){
   if (t %in% caprecapyrs){
 
     if(t == caprecapyrs[1]){
-      caprecap <- data.frame("ID" =simCapRecap(Zmat = Zb_tplus1, Pcap = 0.1),
+      caprecap <- data.frame("ID" =simCapRecap(Zmat = Zb_tplus1, pcap = pcap),
                              "Year" = t, "Cap" = 1)
     } else {
     caprecap <- rbind.data.frame(caprecap, 
-                                 data.frame("ID" =simCapRecap(Zmat = Zb_tplus1, Pcap = 0.1),
+                                 data.frame("ID" =simCapRecap(Zmat = Zb_tplus1, pcap = pcap),
                                             "Year" = t, "Cap" = 1))}
   } # end caprecap
 
+  if(t == linetransyrs[1]){
+    
+    {Nhat <- data.frame("Year" = linetransyrs, "Nhat" = NA, "SD" = NA)}}
   if (t %in% linetransyrs){
-    if(t == linetransyrs[1]){
-      
-      Nhat <- data.frame("Year" = linetransyrs, "Nhat" = NA, "SD" = NA)
-      LTEst <- simLineTransect(N = Na_t[t] + Nb_t[t], L = LT_A + LT_B, A = Area_A + Area_B)
-      Nhat$Nhat[linetransyrs == t] <- LTEst$Nhat
-      Nhat$SD[linetransyrs == t] <- LTEst$SD} else {
-
-    LTEst <- simLineTransect(N = Na_t[t] + Nb_t[t], L = LT_A + LT_B, A = Area_A + Area_B)
-    Nhat$Nhat[linetransyrs == t] <- LTEst$Nhat
-    Nhat$SD[linetransyrs == t] <- LTEst$SD
-  }} # end line transect
+        LTEst <- simSurvey(N = Na_t[t] + Nb_t[t], CV = lt_ecv)
+        Nhat$Nhat[linetransyrs == t] <- LTEst
+        Nhat$SD[linetransyrs == t] <- lt_ecv*LTEst
+  } # end line transect
   
 } # end for t
 
@@ -100,7 +95,7 @@ F <- caprecap %>%
 
 Y <- as.matrix(caphist[,2:ncol(caphist)])
 # take out individuals only seen on last occasion
-Y <- Y[-which(rowSums(Y) == 1 & Y[,21] == 1),]
+Y <- Y[-which(rowSums(Y) == 1 & Y[,ncol(Y)] == 1),]
 
 Zmat <- matrix(rep(0, length(F)*ncol(Y)))
 
@@ -114,40 +109,44 @@ N <- data.frame("Year" = rep(1:nyears, 2),
                 "N" = c(Na_t, Nb_t), 
                 "Region" = c(rep("A", length(Na_t)), rep("B", length(Nb_t))),
                 "K" = c(Ka, Kb))
-
-ggplot(N) +
-  geom_line(aes(x=Year, y = N, color = Region)) +
-  geom_line(aes(x=Year, y = K, color = Region), linetype = "dashed") +
- # xlim(50, 150) +
-  theme_bw() 
-
-N %>% group_by(Year) %>% summarize(Ntot = sum(N)) %>%
-  ggplot()+
-  geom_line(aes(x=Year, y = Ntot))+
-  geom_point(data = Nhat, aes(x=Year, y = Nhat))
+# 
+# ggplot(N) +
+#   geom_line(aes(x=Year, y = N, color = Region)) +
+#   geom_line(aes(x=Year, y = K, color = Region), linetype = "dashed") +
+#  # xlim(50, 150) +
+#   theme_bw() 
+# 
+# N %>% group_by(Year) %>% summarize(Ntot = sum(N)) %>%
+#   ggplot()+
+#   geom_line(aes(x=Year, y = Ntot))+
+#   geom_point(data = Nhat, aes(x=Year, y = Nhat))+
+#   ylim(0,NA)
 
 
 ###################
 
 source("./Scripts/nimbleIPM.R")
 source("./Scripts/simPop.R")
-
-Ndefault <- simPop(K = 225, new = TRUE, nyears = 100)
+#TODO: fix this so it's not hard-coded
+Ndefault <- simPop(K = round(max(Nhat$Nhat)*2), new = TRUE, nyears = nyears)
 
 nimbleData <- list(ltestN = Nhat$Nhat, ltestSD = rep(10, length(Nhat$Year)), 
                    Y = Y)
 
-nimbleConstants <- list(cyear = 50, nyears = 100, S0 = 0.8, S1 = 0.85, AFR = 10,
+nimbleConstants <- list(cyear = 50, nyears = nyears, S0 = 0.8, S1 = 0.85, AFR = 10,
                         AJU = 3, ASA = 5, AMAX = 50, fmax = 0.2, nyears = 100, 
                         z = 2.39, nltyears = length(Nhat$Year), ltyears = Nhat$Year,
-                        PCap = 0.1, ncryears = length(caprecapyrs), Nind = nrow(Y),
+                        pcap = pcap, ncryears = length(caprecapyrs), Nind = nrow(Y),
                         Find = F$Year - F$Year[1] + 1)
 
-nimbleInits <- list(S2 = 0.95, K1 = 225, K2 = 225, N = round(Ndefault))
+nimbleInits <- list(S2 = 0.95, 
+                    K1 = round(max(Nhat$Nhat)*2), 
+                    K2 = round(max(Nhat$Nhat)*2), 
+                    N = round(Ndefault))
 
 nimbleParams <- list("S2", "K1", "K2", "trueN")
 
-set.seed(20220401) 
+#set.seed(20220401) 
 
 model <- nimbleModel(code = ipm,
                      constants = nimbleConstants,
@@ -158,5 +157,10 @@ model <- nimbleModel(code = ipm,
 # Run the model
 nimbleOut <- nimbleMCMC(model, #constants = nimbleCi, inits = nimbleInits,
                         monitors = nimbleParams, 
-                        thin = 10, niter = 1000, nburnin = 500, nchains = 4)
+                        thin = 5, niter = 10000, nburnin = 5000, nchains = 4,
+                        samplesAsCodaMCMC = TRUE)
 
+out <- list(N = N, nimbleOut = nimbleOut)
+return(out)
+
+} # end function

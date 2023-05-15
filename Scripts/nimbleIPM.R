@@ -5,8 +5,8 @@ ipm <- nimbleCode({
   
   # Priors for parameters to be estimated by the model
   S2 ~ dunif(0,1)
-  K1 ~ dunif(175, 225)
-  K2 ~ dunif(175, 225)
+  K1 ~ dunif(10, K1_upper)
+  K2 ~ dunif(10, K2_upper)
   
   # Process model
   
@@ -44,6 +44,7 @@ ipm <- nimbleCode({
   for (i in 1:AMAX){
     N[1, i] <- round(P[i]*R0)
   }
+  Ntot[1] <- sum(N[1, 1:AMAX])
 
   for (t in 1:(nyears-1)){
     ft[t] <- (f0 + (fmax-f0)*(1-(sum(N[t, 2:AMAX])/K[t])^z)) # fec at t
@@ -52,23 +53,23 @@ ipm <- nimbleCode({
     for (a in 2:AMAX){
       N[t+1, a] ~ dbin(S[a-1], N[t, a-1]) # juv and adult 
     } # end for a
+    Ntot[t+1] <- sum(N[t+1, 1:AMAX])
   } # end for t
   
   # Visual survey observation model
   # including calves
   
+  # TODO THIS SHOULD PROBABLY BE LOGNORMAL?
+  
   for (t in 1:nltyears){
-    
     trueN[t] <- sum(N[ltyears[t],1:AMAX])
-    
     ltestN[t] ~ dnorm(trueN[t], ltestSD[t])
-    
   }
 
   # Capture-recapture process and observation model
   
   for (i in 1:Nind){
-    Y[i, Find[i]:ncryears] ~ dCJS_ss(S2, PCap, len = ncryears - Find[i] + 1)
+    Y[i, Find[i]:ncryears] ~ dCJS_ss(S2, pcap, len = ncryears - Find[i] + 1)
   }
 
 })
