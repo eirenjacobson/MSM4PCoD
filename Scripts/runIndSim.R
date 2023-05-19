@@ -1,5 +1,7 @@
 runIndSim <- function(nyears, cval, Ka_1, Ka_2, Kb_1, Kb_2, 
-                      linetransyrs, lt_ecv, caprecapyrs, pcap){
+                      linetransyrs, lt_ecv, 
+                      caprecapyrs, pcap,
+                      nchains, thin, niter, nburnin){
 
 ####
 library(dplyr)
@@ -63,12 +65,14 @@ for (t in 1:nyears){
   if (t %in% caprecapyrs){
 
     if(t == caprecapyrs[1]){
-      caprecap <- data.frame("ID" =simCapRecap(Zmat = Zb_tplus1, pcap = pcap),
-                             "Year" = t, "Cap" = 1)
+      IDs <- simCapRecap(Zmat = Zb_tplus1, pcap = pcap)
+      if (length(IDs) == 0){caprecap <- data.frame()} else {
+      caprecap <- data.frame("ID" = IDs, "Year" = t, "Cap" = 1)}
     } else {
-    caprecap <- rbind.data.frame(caprecap, 
-                                 data.frame("ID" =simCapRecap(Zmat = Zb_tplus1, pcap = pcap),
-                                            "Year" = t, "Cap" = 1))}
+      IDs <- simCapRecap(Zmat = Zb_tplus1, pcap = pcap)
+      if (length(IDs) == 0){ caprecap <- caprecap} else{
+      caprecap <- rbind.data.frame(caprecap, 
+                                  data.frame("ID" = IDs, "Year" = t, "Cap" = 1))}}
   } # end caprecap
 
   if(t == linetransyrs[1]){
@@ -82,22 +86,22 @@ for (t in 1:nyears){
   
 } # end for t
 
-caphist <- caprecap %>% 
-  pivot_wider(id_cols = ID, names_from = Year, values_from = Cap, values_fill = 0)
+caphist <- complete(caprecap, ID, Year = caprecapyrs, fill = list(Cap = 0)) %>% 
+  pivot_wider(id_cols = ID, names_from = Year, values_from = Cap)
 
 # Process caphist for nimbleIPM
 
-F <- caprecap %>% 
-  group_by(ID) %>% 
-  filter(Year == min(Year)) %>% 
-  ungroup() %>%
-  select(Year) %>% as.vector()
 
 Y <- as.matrix(caphist[,2:ncol(caphist)])
 # take out individuals only seen on last occasion
 Y <- Y[-which(rowSums(Y) == 1 & Y[,ncol(Y)] == 1),]
 
-Zmat <- matrix(rep(0, length(F)*ncol(Y)))
+F <- rep(0, nrow(Y))
+for (i in 1:nrow(Y)){
+  F[i] <- min(which(Y[i,] == 1))
+}
+
+#Zmat <- matrix(rep(0, length(F)*ncol(Y)))
 
 # Note these are the tplus1 matrices, not the Na/Nb matrices
 # N <- data.frame("Year" = c(1:ncol(Za_tplus1), 1:ncol(Zb_tplus1)), 
@@ -109,44 +113,30 @@ N <- data.frame("Year" = rep(1:nyears, 2),
                 "N" = c(Na_t, Nb_t), 
                 "Region" = c(rep("A", length(Na_t)), rep("B", length(Nb_t))),
                 "K" = c(Ka, Kb))
-# 
-# ggplot(N) +
-#   geom_line(aes(x=Year, y = N, color = Region)) +
-#   geom_line(aes(x=Year, y = K, color = Region), linetype = "dashed") +
-#  # xlim(50, 150) +
-#   theme_bw() 
-# 
-# N %>% group_by(Year) %>% summarize(Ntot = sum(N)) %>%
-#   ggplot()+
-#   geom_line(aes(x=Year, y = Ntot))+
-#   geom_point(data = Nhat, aes(x=Year, y = Nhat))+
-#   ylim(0,NA)
 
-
-###################
 
 source("./Scripts/nimbleIPM.R")
 source("./Scripts/simPop.R")
-#TODO: fix this so it's not hard-coded
-Ndefault <- simPop(K = round(max(Nhat$Nhat)*2), new = TRUE, nyears = nyears)
+
+Ndefault <- simPop(K = round(max(Nhat$Nhat)), new = TRUE, nyears = nyears)
 
 nimbleData <- list(ltestN = Nhat$Nhat, ltestSD = rep(10, length(Nhat$Year)), 
                    Y = Y)
 
 nimbleConstants <- list(cyear = 50, nyears = nyears, S0 = 0.8, S1 = 0.85, AFR = 10,
-                        AJU = 3, ASA = 5, AMAX = 50, fmax = 0.2, nyears = 100, 
+                        AJU = 3, ASA = 5, AMAX = 50, fmax = 0.25, nyears = 100, 
                         z = 2.39, nltyears = length(Nhat$Year), ltyears = Nhat$Year,
                         pcap = pcap, ncryears = length(caprecapyrs), Nind = nrow(Y),
-                        Find = F$Year - F$Year[1] + 1)
+                        Find = F,
+                        K1_upper = round(max(Nhat$Nhat)*2), 
+                        K2_upper = round(max(Nhat$Nhat)*2))
 
 nimbleInits <- list(S2 = 0.95, 
-                    K1 = round(max(Nhat$Nhat)*2), 
-                    K2 = round(max(Nhat$Nhat)*2), 
-                    N = round(Ndefault))
+                    K1 = round(max(Nhat$Nhat)), 
+                    K2 = round(max(Nhat$Nhat)), 
+                    N = round(Ndefault), Ntot = rowSums(Ndefault))
 
-nimbleParams <- list("S2", "K1", "K2", "trueN")
-
-#set.seed(20220401) 
+nimbleParams <- list("S2", "K1", "K2", "Ntot", "ft", "f0")
 
 model <- nimbleModel(code = ipm,
                      constants = nimbleConstants,
@@ -155,12 +145,14 @@ model <- nimbleModel(code = ipm,
                      check = FALSE)
 
 # Run the model
-nimbleOut <- nimbleMCMC(model, #constants = nimbleCi, inits = nimbleInits,
+nimbleOut <- nimbleMCMC(model, 
                         monitors = nimbleParams, 
-                        thin = 5, niter = 10000, nburnin = 5000, nchains = 4,
+                        thin = thin, niter = niter, nburnin = nburnin, nchains = nchains,
                         samplesAsCodaMCMC = TRUE)
 
-out <- list(N = N, nimbleOut = nimbleOut)
+out <- list(N = N, nimbleOut = nimbleOut, ltestN = Nhat$Nhat)
+
 return(out)
+
 
 } # end function
