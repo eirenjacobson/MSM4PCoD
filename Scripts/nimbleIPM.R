@@ -4,9 +4,10 @@ ipm <- nimbleCode({
   # Fixed values
   
   # Priors for parameters to be estimated by the model
-  S2 ~ dunif(0,1)
-  K1 ~ dunif(10, K1_upper)
-  K2 ~ dunif(10, K2_upper)
+  S2 ~ dunif(0.94, 0.96)
+  K1 ~ dunif(25, K1_upper)
+  K2 ~ dunif(25, K2_upper)
+  PCap ~ dunif(0, 1)
   
   # Process model
   
@@ -21,7 +22,7 @@ ipm <- nimbleCode({
   
   # Calculate fec at equilibrium according to Eq 3 in Brandon et al
   # Density-dependence affects fecundity according to Pella-Tomlinson
-  f0 <- (1-S2)/(S0^(AJU-1)*S1^(ASA-1)*S2^(AFR-ASA-2))*(1-S2^(AMAX-AFR-2))
+  f0 <- min(fmax, (1-S2)/(S0^(AJU-1) * S1^(ASA-AJU) * S2^(AFR-ASA) * (1-S2^(AMAX-AFR-1))))
   
   #N[1:nyears, 1:AMAX] <- matrix(rep(NA, nyears*AMAX), ncol=AMAX) # population matrix
   
@@ -47,7 +48,7 @@ ipm <- nimbleCode({
   Ntot[1] <- sum(N[1, 1:AMAX])
 
   for (t in 1:(nyears-1)){
-    ft[t] <- (f0 + (fmax-f0)*(1-(sum(N[t, 2:AMAX])/K[t])^z)) # fec at t
+    ft[t] <- max(0, f0 + (fmax-f0)*(1-(sum(N[t, 2:AMAX])/K[t])^z)) # fec at t
     N[t+1, 1] ~ dbin(ft[t], round(sum(N[t, AFR:AMAX]))) # calves
     #N[t+1, 1] <- dbinom(1, size = round(sum(N[t, AFR:AMAX])), prob = ft[t])
     for (a in 2:AMAX){
@@ -59,17 +60,22 @@ ipm <- nimbleCode({
   # Visual survey observation model
   # including calves
   
-  # TODO THIS SHOULD PROBABLY BE LOGNORMAL?
-  
   for (t in 1:nltyears){
     trueN[t] <- sum(N[ltyears[t],1:AMAX])
     ltestN[t] ~ dnorm(trueN[t], ltestSD[t])
   }
+  
+  # Passive acoustic survey
 
+  for (t in 1:npamyears){
+    trueNb[t] <- sum(N[pamyears[t],1:AMAX])/2
+    pamestN[t] ~ dnorm(trueNb[t], pamestSD[t])
+  }
+  
   # Capture-recapture process and observation model
   
   for (i in 1:Nind){
-    Y[i, Find[i]:ncryears] ~ dCJS_ss(S2, pcap, len = ncryears - Find[i] + 1)
+    Y[i, Find[i]:ncryears] ~ dCJS_ss(S2, PCap, len = ncryears - Find[i] + 1)
   }
 
 })
