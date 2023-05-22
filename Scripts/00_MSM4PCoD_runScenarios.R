@@ -1,5 +1,4 @@
 
-# Note 2023-05-15 12 mins per scenario w/10,000 iter on loaner Macbook Pro
 
 ##############
 # path to file containing simulation parameters
@@ -7,7 +6,7 @@ filepath <- "./Data/MSM4PCoD_SimulationParameters.xlsx"
 # number of scenarios IN THE FILE
 nscenarios <- 7
 # names of the scenarios you want to run
-scenarios <- c("TEST")
+scenarios <- c("NULL_LCP", "D50_LCP")
 # set seed for reproducibility
 set.seed(20230504)
 ##############
