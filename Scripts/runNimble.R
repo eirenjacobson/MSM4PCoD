@@ -18,8 +18,9 @@ runNimble <- function(simdata,
   
     Y <- as.matrix(caphist[,2:ncol(caphist)])
     # take out individuals only seen on last occasion
-    Y <- Y[-which(rowSums(Y) == 1 & Y[,ncol(Y)] == 1),]
-  
+    lastind <- which(rowSums(Y) == 1 & Y[,ncol(Y)] == 1)
+    if(length(lastind) == 0){Y <- Y} else {Y <- Y[-lastind]}
+    
     Find <- rep(0, nrow(Y))
     for (i in 1:nrow(Y)){
       Find[i] <- min(which(Y[i,] == 1))
