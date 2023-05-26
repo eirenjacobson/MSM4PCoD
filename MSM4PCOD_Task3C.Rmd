@@ -1,7 +1,7 @@
 ---
-title: "MSM4PCOD Task 3C"
+title: "MSM4PCoD Task 3C"
 author: "Eiren Jacobson"
-date: "11 January 2023"
+date: "26 May 2023"
 output: pdf_document
 ---
 
@@ -9,19 +9,20 @@ output: pdf_document
 knitr::opts_chunk$set(echo = FALSE)
 
 library(knitr)
+library(ggplot2)
 ```
 
 ## Summary
 
-In this project, we are interested in detecting trends in metapopulations of marine mammals where disturbance and sampling may not be uniformly distributed. How should we collect data to maximize the ability to detect declines? We propose to investigate this question using a simulation tool. Briefly, the simulation includes population simulation via an individual-based population model, data generation via simulated line-transect, capture-recapture, and passive acoustic surveys, and trend analysis via an integrated population model. As a case study, we simulate a hypothetical metapopulation loosely based on Cuvier's beaked whales (Ziphius cavirostris) in Southern California, with the eventual goal of building a framework that could be adapted for any species/region/scenario.
+In this project, we are interested in detecting trends in metapopulations of marine mammals where disturbance and sampling may not be uniformly distributed. How should we collect data to maximize the ability to detect declines? We propose to investigate this question using a simulation tool. Briefly, the simulation includes population simulation via an individual-based population model, data generation via simulated line-transect, capture-recapture, and passive acoustic surveys, and trend analysis via an integrated population model. As a case study, we simulate a hypothetical metapopulation loosely based on Cuvier's beaked whales (\textit{Ziphius cavirostris}) in Southern California, with the eventual goal of building a framework that could be adapted for any species, region, or scenario.
 
-**NOTE:** All code is available at https://github.com/eirenjacobson/MSM4PCoD.git
+\newpage
 
 ## Task 3C.1: Population Simulation
 
-The population simulation takes a simple two-box structure, meant to emulate a metapopulation with two regions each containing a subpopulation. Each region has its own carrying capacity and internal dynamics, but animals may move between regions (explained below). The populations are assumed to have Pella-Tomlinson type density-dependent fecundity (Brandon et al. 2007). For simplicity, we assume that the two regions are the same size (A = 2,500 km2) and start with the same carrying capacity (K = 100).
+The population simulation takes a simple two-box structure, meant to emulate a metapopulation with two regions each containing a subpopulation. Each region has its own carrying capacity and internal dynamics, but animals may move between regions (explained below). The populations are assumed to have Pella-Tomlinson type density-dependent fecundity (Brandon et al. 2007). For simplicity, we assume that the two regions are the same size (unitless) and start with the same carrying capacity (K = 100).
 
-The script initPop.R initializes a population, given parameters S0 (calf survival), S1 (juvenile survival), S2 (subadult and adult survival), AFR (age at first reproduction), AJU (age at which become juvenile subject to S1), ASA (age at which become subadult subject to S2), fmax (maximum fecundity), K (initial carrying capacity), and z (degree of compensation for the Pella-Tomlinson response). For the case study, these values are set as detailed in Table 1. 
+The script initPop.R initializes a population, given parameters $S_0$ (calf survival), $S_1$ (juvenile survival), $S_2$ (subadult and adult survival), $A_\text{FR}$ (age at first reproduction), $A_\text{JU}$ (age at which become juvenile subject to $S_1$), $A_\text{SA}$ (age at which become subadult subject to $S_2$), $f_{\text{max}}$ (maximum fecundity), $K$ (carrying capacity), and $z$ (degree of compensation for the Pella-Tomlinson response). For the case study, these values are set as detailed in Table 1. 
 
 ```{r}
 
@@ -33,70 +34,129 @@ kable(t1)
                 
 ```
 
-The script projPop.R takes the output of initPop.R and projects the populations forward in time, according to the above parameters plus the number of years to project (here nyears is set to 100). Carrying capacities are set for each year and region, so that disturbance can be simulated in one or both regions. Fecundity and survival are simulated stochastically. Individuals animals are tracked over time (this is necessary for the mark-recapture simulation, explained below).
+The script projPop.R takes the output of initPop.R and projects the populations forward in time, according to the above parameters plus the number of years to project (for the case study this is set to 100). Carrying capacities are set for each year and region, so that disturbance can be simulated in one or both regions. Realized fecundity and survival are simulated stochastically (i.e., via draws from binomial distributions). Individuals animals are tracked over time and between regions (this is necessary for the mark-recapture simulation, explained below).
 
-Density-dependent movement occurs. If the density of animals in one region is higher than the density of animals in another region, some animals will move to the region with lower density. The simulation assumes that the animals do not correctly perceive the habitat quality; i.e., the density each year Nt/K is evaluated based on K in year 1, if K changes, it is assumed that the animals are not aware of this. However, population dynamics (esp. changes in fecundity) do respond to the new K. This is called an ecological trap. For the purposes of the case study, this design is meant to emulate the hypothesized scenario in Southern California, where disturbance due to Naval training and testing is thought to overlap with high-quality habitat. 
+Density-dependent movement occurs via the script redistributePop.R. If the density of animals in one region is higher than the density of animals in another region, some animals will move to the region with lower density. The simulation assumes that the animals do not correctly perceive the habitat quality; i.e., the density each year ${N_t}/K$ is evaluated based on $K$ in year 1, if $K$ changes, it is assumed that the animals are not aware of this. However, population dynamics (esp. changes in fecundity) do respond to the new $K$. This is meant to mimic an ecological trap. For the purposes of the case study, this design emulates the hypothesized scenario in Southern California, where disturbance due to Naval training and testing is thought to overlap with high-quality habitat. 
 
-Only juvenile animals are allowed to move between regions. The simulation includes a connectivity parameter c that controls how much redistribution of animals occurs. The parameter takes values between 0 and 1. When c = 1, animals redistribute so that the densities in the two regions are equal. When 0 < c < 1, "surplus" animals in one region will move to the other region with probability c. The script redistributePop.R evaluates the ratio of N/K in each of the two regions and moves individuals (tracked using unique IDs) between regions. 
+Only juvenile animals are allowed to move between regions. The simulation includes a connectivity parameter $c$ that controls how much redistribution of animals occurs. The parameter takes values between 0 and 1. When $c = 1$, animals redistribute so that the densities in the two regions are equal. When 0 < $c$ < 1, "surplus" animals in one region will move to the other region with probability $c$. The script redistributePop.R evaluates the ratio of N/K in each of the two regions and moves individuals (tracked using unique IDs) between regions. 
 
-For the case study, we simulate two scenarios: one where K is constant across regions and time and others where K decreases in one region but not the other (e.g., by 50\%; Fig. 1).
+For the case study, we simulate two scenarios: one where $K$ is constant across regions and time and one where $K$ decreases by 50\% in one region but not the other (Fig. 1).
 
-```{r, out.width = '75%', fig.align='center', fig.cap = "Simulated metapopulation showing number of animals (vertical axis) in each of two subpopulations (red indicates region A, blue indicates region B) over a 100 year period (horizontal axis). The carrying capacity in each region is shown by a dashed line."}
+```{r, out.width = '75%', fig.align='center', fig.cap = "Simulated metapopulation showing number of animals (vertical axis) in each of two subpopulations (red indicates region A, blue indicates region B) over a 100 year period (horizontal axis). The carrying capacity in each region is shown by a dashed line and, in this scenario, changes only in Region B."}
 
 include_graphics("./Figures/ExScenarioB.png")
 
 ```
 
+\newpage
+
 ## Task 3C.2: Survey Simulation
 
 We simulate three different types of data collection and analysis: photographic capture-recapture surveys for estimates of adult survival, visual line-transect surveys for estimates of abundance, and fixed passive acoustic monitoring for estimates of abundance. 
 
-The script simCapRecap.R simulates photographic capture-recapture surveys. The surveys are simulated to occur only in the disturbed region (e.g., region B in Fig. 1). Parameters of the simulation include survey years and effort (which affects capture probability). 
+The script simCapRecap.R simulates photographic capture-recapture surveys. The surveys are simulated to occur only in the disturbed region (e.g., region B in Fig. 1). Parameters of the simulation include survey years and capture probability $P_\text{cap}$ (here set to 0.2). Because marks are acquired with age, only subadult and adult animals can be captured in the survey.
 
-TODO: need to get relationship of time spent on the water to capture probability, either from Curtis paper or the last chapter of Dave Moretti's thesis.
+The script simSurvey.R simulates generic surveys given survey years and expected CV of the surveys. In the case study, this function is used to simulate both visual line-transect and passive acoustic surveys of animal abundance. For line-transect surveys, the expected CV is 0.6 (Moore and Barlow 2017) and surveys are simulated to occur every 5 years. For passive acoustic surveys, the expected CV is 0.356 (see section XX of this study) ans surveys are assumed to occur every year. 
 
-The script simLineTransect.R simulates line-transect surveys with properties similar to line-transect surveys carried out by the SWFSC (Moore and Barlow 2013). Parameters of the simulation include survey years and effort (total length of line transects). It is assumed that the detection function is estimated from data pooled across multiple surveys (not just from the simulated data).
+Line-transect surveys occur at the metapopulation level (Fig. 2) while capture-recapture and passive acoustic surveys occur at the subpopulation level (Fig. 3).
 
-TODO: currently simLineTransect includes only binomial variance. Need to fix this to include overdispersion according to Distance book. Should also switch from using length of transect to using CV directly, then explain methods for conversion. 
+```{r, fig.align = 'center', fig.cap = "Example data simulation in the case where K is constant over time and regions plotted at the metapopulation level (i.e., both regions combined). The dashed line indicates simulated carrying capacity. The solid line indicates simulated population size. The points indicate visual survey estimates of abundance with associated 95\\% confidence intervals."}
 
-TODO: Add acoustic survey simulation (need CV estimates from Megan) add to above figure
+include_graphics("./Figures/MetapopulationExample.png")
 
-## Task 3C.3: Integrated Population Model 
-
-We constructed an integrated population model to jointly analyze multiple simulated datasets. The integrated population model is implemented in Nimble and fit with MCMC. The file nimbleIPM.R contains the model code, while the file runIndSim.R contains code to generate data (as described above) and fit the Nimble model.
-
-```{r, out.width = '75%', fig.align='center', fig.cap = "Directed acyclic graph of model structure. Parameters are shared between the population process model (central box) and each of the observational submodels (peripheral boxes)."}
-
-include_graphics("./Figures/pptDAG.png")
 
 ```
 
-TODO: re-make model DAG in R 
+```{r, fig.align = 'center', fig.cap = "Example data simulation in the case where K is constant over time and regions plotted at the subpopulation level (i.e., only the region where capture-recapture and passive acoustic surveys are collected, where impact may occur). The dashed line indicates simulated carrying capacity. The solid line indicates simulated population size. The points indicate passive acoustic survey estimates of abundance with associated 95\\% confidence intervals. The points along the bottom indicate years in which capture-recapture surveys were conducted."}
 
-TODO: second version of the model where metapopulation structure is known
-
-TODO: In Nimble, can you compile a model before you show it any data? This would make the simulation process faster because you wouldn't need to recompile the model
-
-TODO: quantification of power, histogram/density plot of estimated trends would be more informative (where power would just be the proportion of those trends that are on the right side of zero)
-
-TODO: Look at new IPM book, look into more efficient JS
+include_graphics("./Figures/SubpopulationExample.png")
 
 
-## Future work and/or for discussion
+```
 
-- Expand simulation to include group size simulation/estimation. Bernoulli for detecting groups, then likelihood for group size that is poisson or negative binomial.
+\newpage
+
+## Task 3C.3: Integrated Population Model 
+
+We constructed an integrated population model (Fig. 4) to jointly analyze multiple simulated datasets. The integrated population model is implemented in Nimble and fit with MCMC. The file nimbleIPM.R contains the model code, while the file runIndSim.R contains code to generate data (as described above) and runNimble.R fits the Nimble model.
+
+```{r, out.width = '75%', fig.align='center', fig.cap = "Directed acyclic graph of model structure. Parameters are shared between the population process model (central box) and each of the observational submodels (peripheral boxes indicated with dashed lines)."}
+
+include_graphics("./Figures/lucidDAG.pdf")
+
+```
+
+\newpage
+
+## Task 3C.4: Implementation and Preliminary Results
+
+For preliminary discussion, we simulated 10 iterations each of two scenarios. In both scenarios, the simulation was run for 100 years, with line-transect surveys occurring every 5 years between years 40 and 60, passive acoustic surveys occurring every year between years 40 and 60, and capture-recapture surveys occurring every year between years 40 and 60. Line-transect surveys occurred at the metapopulation level, while passive acoustic and capture-recapture surveys occurred in one of the two regions (the impacted region, where relevant). In the scenario NULL_LCP, carrying capacity is the same in both regions and is constant over time. In the scenario D50_LCP, carrying capacity was constant in one region and decreased by 50\% in the other region from year 50. We ran the IPM in Nimble with four chains of 50,000 iterations each, 40,000 burnin, and 10-fold thinning, resulting in 4,000 posterior samples per iteration.
+
+All code is available at https://github.com/eirenjacobson/MSM4PCoD.git. A diagram of the data simulation and analysis pipeline is provided in Appendix A. The IPM model code is included in Appendix B.
+
+Here, we describe graphical results for one iteration of the scenario D50_LCP. Graphical results for all simulations (n = 10) of both scenarios can be found in the folders D50_LCP_bluewhale_2023-05-26 and NULL_LCP_bluewhale_2023-05-26. *Note that bluewhale indicates the server the simulations were run on, not anything to do with actual blue whales!
+
+```{r, fig.align = 'center', fig.cap = "Population size (vertical axis) over time (horizontal axis) at the metapopulation level. The black line indicates the true simulated population size, while the orange line indicates the model estimate of population size with 95\\% credibility intervals. The blue dashed line and shading indicate the model estimate of carrying capacity. The black dots with vertical bars indicate simulated visual line-transect survey estimates of abundance."}
+
+include_graphics("./Figures/metaplot_1.png")
+```
+
+   
+```{r, fig.align = 'center', fig.cap = "Population size (vertical axis) over time (horizontal axis) at the subpopulation level. The black line indicates true simulated population size within the subpopulation. The orange line and shading indicate the model estimate of metapopulation size and associated 95\\% credibility intervals divided by two (since we have assumed the two subpopulations to be in areas of equal size). Similarly, the blue dashed line and shading indicates the model estimate of carrying capacity and associated 95% confidence intervals. The black triangles and vertical bars indicate simulated passive acoustic survey estimates of abundance with 95\\% confidence intervals." }
+
+include_graphics("./Figures/subplot_1.png")
+```
+
+   
+```{r, fig.align = 'center', fig.cap = "MCMC samples of parameters estimated by the model, including carrying capacity from years 0-50 (K1, true value set to 200), carrying capacity from years 50-100 (K2, true value set to 150), capture probability in the capture-recapture survey (PCap, true simulated value set to 0.2), and adult survival (S2, true value set to 0.95). Colors indicate four different chains."}
+
+include_graphics("./Figures/chainplot_1.png")
+```
+
+   
+```{r, fig.aling = 'center', fig.cap = "Density plots of MCMC samples (all chains) of parameters estimated by the model, including carrying capacity from years 0-50 (K1, true value set to 200), carrying capacity from years 50-100 (K2, true value set to 150), capture probability in the capture-recapture survey (PCap, true simulated value set to 0.2), and adult survival (S2, true value set to 0.95)."}
+
+include_graphics("./Figures/parplot_1.png")
+```
+
+\newpage
+
+## To Discuss
+
+- I have simulated surveys between years 40 and 60. Should the surveys cover a longer time frame?  
+
+- The model is fitting to the simulated estimates of abundance more closely than I would like. This is especially problematic at the edges, where the first and last surveys seem to be strongly influencing population trajectory.
+
+- The model estimate of adult survival is consistently lower than the true simulated value.  
+
+- Originally I planned to use the model estimates of K1 and K2 as an indicator of whether disturbance and a resulting change in population size could be picked up with an IPM. However, the model isn't resolving either value of K very well. What would be a better indicator of "success"?
+
+## Future work
+
+- Add calf or juvenile ratio as a survey type
+
+- Could expand simulation to include group size simulation/estimation. Bernoulli for detecting groups, then likelihood for group size that is poisson or negative binomial.
 
 - Could include any number of survey modalities, each with a frequency/inter-survey-interval and CV associated with resulting estimates of abundance, and where it happens.
 
 - Could use open population capture recapture to estimate N and survival.
 
-- When both capture-recapture and fractional information (e.g., calf or juvenile ratio) are used, data will not be independent -- think about whether/how to handle this in the likelihood.
-
-- More complex simulation could introduce environmental variation, fluctuation in carrying capacity from year to year. Squid fishery or CalCOFI data on variability/fluctuations as indicator of environmental variability? E.g., percentage change in carrying capacity from year to year?
-
-- Currently only individuals are detected. Could add group size simulation. Bernoulli for detecting groups, then likelihood for group size that is poisson or neg bin.
-
-- TODO: re-read Charlotte's paper and see how they did inference on local v regional?
+\newpage
 
 
+## Appendix A: Diagram of data analysis pipeline
+```{r, out.width = '100%', fig.align='center', fig.cap = "Diagram of data simulation and analysis pipeline. Boxes with grey shading indicate that user inputs are required."}
 
+include_graphics("./Figures/PipelineDiagram.pdf")
+
+```
+
+\newpage
+
+## Appendix B: IPM model code
+```{embed, echo = TRUE, eval = FALSE}
+
+"./Scripts/nimbleIPM.R"
+
+
+```

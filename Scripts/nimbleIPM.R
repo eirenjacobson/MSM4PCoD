@@ -4,7 +4,7 @@ ipm <- nimbleCode({
   # Fixed values
   
   # Priors for parameters to be estimated by the model
-  S2 ~ dunif(0.94, 0.96)
+  S2 ~ dunif(0.85, 1)
   K1 ~ dunif(25, K1_upper)
   K2 ~ dunif(25, K2_upper)
   PCap ~ dunif(0, 1)

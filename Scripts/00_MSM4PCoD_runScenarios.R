@@ -6,7 +6,7 @@ filepath <- "./Data/MSM4PCoD_SimulationParameters.xlsx"
 # number of scenarios IN THE FILE
 nscenarios <- 7
 # names of the scenarios you want to run
-scenarios <- c("NULL_LCP", "D50_LCP")
+scenarios <- c("D50_LCP")
 # set seed for reproducibility
 set.seed(20230504)
 ##############
@@ -46,7 +46,7 @@ for (i in 1:length(scenarios)){
   
   for (j in 1:pars$nsim){
     print(paste("Beginning iteration", j, "of scenario", scenarios[i]))
-    
+    set.seed(paste0("20230520", j))
     simdata[[j]] <- runIndSim(nyears = pars$nyears, 
                         cval = pars$cval,
                         Ka_1 = pars$Ka_1,
@@ -75,6 +75,9 @@ for (i in 1:length(scenarios)){
   } # end for j
   
   save(results, file = paste0("./Data/MSM4PCoD_Results_Scenario", 
+                              scenarios[i], "_", date(now()), ".RData"))
+  
+  save(simdata, file = paste0("./Data/MSM4PCoD_SimData_Scenario", 
                               scenarios[i], "_", date(now()), ".RData"))
   
   
