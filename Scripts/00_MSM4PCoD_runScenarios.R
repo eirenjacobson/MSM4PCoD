@@ -1,19 +1,19 @@
 
 library(parallel)
-#this_cluster <- makeCluster(4)
+this_cluster <- makeCluster(4)
 
 ##############
 # path to file containing simulation parameters
 filepath <- "./Data/MSM4PCoD_SimulationParameters.xlsx"
 # number of scenarios IN THE FILE
-nscenarios <- 2
+nscenarios <- 18
 # names of the scenarios you want to run
-scenarios <- c("NULL_LCP", "D50_LCP")
+scenarios <- 
 # whether to simulate new data
-simnewdata <- FALSE
+simnewdata <- TRUE
 # if simnewdata = FALSE, specify where to find datasets (for each scenario)
-simdataloc <- c("./Data/MSM4PCoD_SimData_NULL_LCP_bluewhale_2023-05-26.RData", 
-                "./Data/MSM4PCoD_SimData_D50_LCP_bluewhale_2023-05-26.RData")
+#simdataloc <- c("./Data/MSM4PCoD_SimData_NULL_LCP_bluewhale_2023-05-26.RData", 
+#                "./Data/MSM4PCoD_SimData_D50_LCP_bluewhale_2023-05-26.RData")
 
 # set seed for reproducibility
 set.seed(20230504)
@@ -78,26 +78,26 @@ for (i in 1:length(scenarios)){
                         pamyrs = pamyrs,
                         pam_ecv = pars$pam_ecv)}
 # Dave futzing starts here                        
-    results[[j]] <- runNimble(simdata = simdata[[j]],
-                              linetrans = pars$linetrans,
-                              caprecap = pars$caprecap,
-                              pam = pars$pam,
-                              nyears = pars$nyears,
-                              nchains = pars$nchains,
-                              thin = pars$thin,
-                              niter = pars$niter,
-                              nburnin = pars$nburnin)
-    
-    # results[[j]] <- parLapply(fun=runNimble, X=1:4, cl=this_cluster,
-    #                           simdata = simdata[[j]],
+    # results[[j]] <- runNimble(simdata = simdata[[j]],
     #                           linetrans = pars$linetrans,
     #                           caprecap = pars$caprecap,
     #                           pam = pars$pam,
     #                           nyears = pars$nyears,
-    #                           nchains = 1,
-    #                           thin = pars$thin, 
-    #                           niter = pars$niter, 
+    #                           nchains = pars$nchains,
+    #                           thin = pars$thin,
+    #                           niter = pars$niter,
     #                           nburnin = pars$nburnin)
+    
+    results[[j]] <- parLapply(fun=runNimble, X=1:4, cl=this_cluster,
+                              simdata = simdata[[j]],
+                              linetrans = pars$linetrans,
+                              caprecap = pars$caprecap,
+                              pam = pars$pam,
+                              nyears = pars$nyears,
+                              nchains = 1,
+                              thin = pars$thin,
+                              niter = pars$niter,
+                              nburnin = pars$nburnin)
     
   } # end for j
   
@@ -106,12 +106,18 @@ for (i in 1:length(scenarios)){
   
   save(simdata, file = paste0("./Data/MSM4PCoD_SimData_", 
                               scenarios[i], "_", date(now()), ".RData"))
-  
-  
+
+  id <- paste0(scenarios[i], "_", date(now))
+
+  source("./Scripts/procResults.R")
+  procResults(id, pars$lt_ecv, pars$pam_ecv)
+
+  source("./Scripts/calcPower.R")
+  calcPower(id)
+
 } # end for i
+
+stopCluster(this_cluster)
 
 end <- Sys.time()
 dur <- end-start 
-
-#stopCluster(this_cluster)
-
