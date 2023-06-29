@@ -10,7 +10,7 @@ simCalfRatio <- function(Zmat, pcap){
   ages <- rowSums(Zmat)
   alive <- Zmat[which(Zmat[,ncol(Zmat)] == 1 & ages %in% 1:2),]
   if(nrow(alive) == 0){ncalves <- 0} else {
-  ncalves <- rbinom(n = nrow(alive), size = 1, prob = pcap)}
+  ncalves <- sum(rbinom(n = nrow(alive), size = 1, prob = pcap))}
 
   return(ncalves)
   
