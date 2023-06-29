@@ -1,17 +1,19 @@
 
+library(parallel)
+#this_cluster <- makeCluster(4)
 
 ##############
 # path to file containing simulation parameters
 filepath <- "./Data/MSM4PCoD_SimulationParameters.xlsx"
 # number of scenarios IN THE FILE
-nscenarios <- 7
+nscenarios <- 2
 # names of the scenarios you want to run
-scenarios <- c("TEST")
+scenarios <- c("NULL_LCP", "D50_LCP")
 # whether to simulate new data
-simnewdata <- TRUE
+simnewdata <- FALSE
 # if simnewdata = FALSE, specify where to find datasets (for each scenario)
-simdataloc <- c("./Data/MSM4PCoD_SimData_NULL_LCP_2023-05-21.RData", 
-                "./Data/MSM4PCoD_SimData_D50_LCP_2023-05-23.RData")
+simdataloc <- c("./Data/MSM4PCoD_SimData_NULL_LCP_bluewhale_2023-05-26.RData", 
+                "./Data/MSM4PCoD_SimData_D50_LCP_bluewhale_2023-05-26.RData")
 
 # set seed for reproducibility
 set.seed(20230504)
@@ -75,16 +77,27 @@ for (i in 1:length(scenarios)){
                         pam = pars$pam,
                         pamyrs = pamyrs,
                         pam_ecv = pars$pam_ecv)}
-                        
+# Dave futzing starts here                        
     results[[j]] <- runNimble(simdata = simdata[[j]],
                               linetrans = pars$linetrans,
                               caprecap = pars$caprecap,
                               pam = pars$pam,
                               nyears = pars$nyears,
                               nchains = pars$nchains,
-                              thin = pars$thin, 
-                              niter = pars$niter, 
+                              thin = pars$thin,
+                              niter = pars$niter,
                               nburnin = pars$nburnin)
+    
+    # results[[j]] <- parLapply(fun=runNimble, X=1:4, cl=this_cluster,
+    #                           simdata = simdata[[j]],
+    #                           linetrans = pars$linetrans,
+    #                           caprecap = pars$caprecap,
+    #                           pam = pars$pam,
+    #                           nyears = pars$nyears,
+    #                           nchains = 1,
+    #                           thin = pars$thin, 
+    #                           niter = pars$niter, 
+    #                           nburnin = pars$nburnin)
     
   } # end for j
   
@@ -99,4 +112,6 @@ for (i in 1:length(scenarios)){
 
 end <- Sys.time()
 dur <- end-start 
+
+#stopCluster(this_cluster)
 

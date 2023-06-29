@@ -4,10 +4,13 @@ ipm <- nimbleCode({
   # Fixed values
   
   # Priors for parameters to be estimated by the model
-  S2 ~ dunif(0.85, 1)
-  K1 ~ dunif(25, K1_upper)
-  K2 ~ dunif(25, K2_upper)
+  S2 ~ dunif(0.94, 0.96)
+  K1_scalar ~ dunif(0, 1)
+  K2_scalar ~ dunif(0, 1)
   PCap ~ dunif(0, 1)
+  
+  K1 <- K_lower + K1_scalar*(K_upper-K_lower)
+  K2 <- K_lower + K2_scalar*(K_upper-K_lower)
   
   # Process model
   
@@ -50,9 +53,10 @@ ipm <- nimbleCode({
   for (t in 1:(nyears-1)){
     ft[t] <- max(0, f0 + (fmax-f0)*(1-(sum(N[t, 2:AMAX])/K[t])^z)) # fec at t
     N[t+1, 1] ~ dbin(ft[t], round(sum(N[t, AFR:AMAX]))) # calves
-    #N[t+1, 1] <- dbinom(1, size = round(sum(N[t, AFR:AMAX])), prob = ft[t])
+    #N[t+1, 1] <- round(sum(N[t, AFR:AMAX]))*ft[t]
     for (a in 2:AMAX){
       N[t+1, a] ~ dbin(S[a-1], N[t, a-1]) # juv and adult 
+      #N[t+1, a] <- S[a-1]*N[t, a-1]
     } # end for a
     Ntot[t+1] <- sum(N[t+1, 1:AMAX])
   } # end for t
@@ -62,14 +66,20 @@ ipm <- nimbleCode({
   
   for (t in 1:nltyears){
     trueN[t] <- sum(N[ltyears[t],1:AMAX])
-    ltestN[t] ~ dnorm(trueN[t], ltestSD[t])
+     mu_log_lt[t] <- log(trueN[t]^2/sqrt(trueN[t]^2 + ltestSD[t]^2))
+     sigma_log_lt[t] <- sqrt(log(1+(ltestSD[t]^2/trueN[t]^2)))
+     ltestN[t] ~ dlnorm(meanlog = mu_log_lt[t], sdlog = sigma_log_lt[t])
+    #ltestN[t] ~ dnorm(trueN[t], ltestSD[t])
   }
   
   # Passive acoustic survey
 
   for (t in 1:npamyears){
     trueNb[t] <- sum(N[pamyears[t],1:AMAX])/2
-    pamestN[t] ~ dnorm(trueNb[t], pamestSD[t])
+    mu_log_pam[t] <- log(trueNb[t]^2/sqrt(trueNb[t]^2 + pamestSD[t]))
+    sigma_log_pam[t] <- sqrt(log(1+(pamestSD[t]^2/trueNb[t]^2)))
+    pamestN[t] ~ dlnorm(meanlog = mu_log_pam[t], sdlog = sigma_log_pam[t])
+    #pamestN[t] ~ dnorm(trueNb[t], pamestSD[t])
   }
   
   # Capture-recapture process and observation model

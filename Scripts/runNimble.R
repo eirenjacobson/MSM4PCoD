@@ -1,10 +1,13 @@
 
 runNimble <- function(simdata, 
                       nyears, linetrans, caprecap, pam,
-                      nchains, niter, thin, nburnin){
+                      nchains, niter, thin, nburnin, X){
   
   library(nimble)
   library(nimbleEcology)
+  library(dplyr)
+  library(tidyr)
+  library(lubridate)
   
   source("./Scripts/nimbleIPM.R")
   source("./Scripts/simPop.R")
@@ -31,7 +34,7 @@ runNimble <- function(simdata,
   } else {Y <- NULL; Find <- NULL; ncryears <- NULL} # end if caprecap
   
 
-  Kdefault <- max(simdata$LTData$Nhat, simdata$PAMData$Nhat)
+  Kdefault <- max(simdata$LTData$Nhat, simdata$PAMData$Nhat*2)
   Ndefault <- simPop(K = round(Kdefault), new = TRUE, nyears = nyears)  
   # stopping here -- need to figure out how to get info out of list if NULL
   # or make different versions of data list depending on which data are provided?
@@ -44,13 +47,13 @@ runNimble <- function(simdata,
                           z = 2.39, ncryears = ncryears, Nind = nrow(Y), Find = Find, 
                           ltyears = simdata$LTData$Year, nltyears = length(simdata$LTData$Year),
                           pamyears = simdata$PAMData$Year, npamyears = length(simdata$PAMData$Year),
-                          K1_upper = round(max(c(simdata$LTData$Nhat, simdata$PAMData$Nhat))*2), 
-                          K2_upper = round(max(c(simdata$LTData$Nhat, simdata$PAMData$Nhat))*2))
+                          K_lower = 125,#round(min(c(simdata$LTData$Nhat, simdata$PAMData$Nhat*2))), 
+                          K_upper = 225)#round(max(c(simdata$LTData$Nhat, simdata$PAMData$Nhat*2))))
   
   nimbleInits <- list(S2 = 0.95, 
                       PCap = 0.2,
-                      K1 = round(Kdefault), 
-                      K2 = round(Kdefault), 
+                      K1_scalar = 1, 
+                      K2_scalar = 1, 
                       N = round(Ndefault), Ntot = rowSums(Ndefault))
   
   nimbleParams <- list("S2", "K1", "K2", "PCap", "Ntot", "ft", "f0")
