@@ -23,28 +23,31 @@ calcPower <- function(id){
   Ndf <- results.out$Ndf
   
   tr <- foreach(i = 1:100, .combine = 'rbind.data.frame') %dopar% {
-    
     for (j in unique(Ndf$Chain)){
       for (k in 1:250){
         print(paste(i, j, k))
         m1 <- glm(Ntot ~ Year, 
-                 data = filter(Ndf, Year %in% 51:100, Iter == i, Chain == j, Sample == k),
+                 data = dplyr::filter(Ndf, Year %in% 1:50, Iter == i, Chain == j, Sample == k),
                  family = "quasipoisson")
         power.results <- rbind.data.frame(power.results, 
                                           data.frame("Iter" = i, "Chain" = j, 
                                                      "Sample" = i, "Period" = "Pre",
                                                      "Coef" = as.numeric(m1$coefficients[2])))
         m2 <- glm(Ntot ~ Year, 
-                 data = filter(Ndf, Year %in% 51:100, Iter == i, Chain == j, Sample == k),
+                 data = dplyr::filter(Ndf, Year %in% 51:100, Iter == i, Chain == j, Sample == k),
                  family = "quasipoisson")
         power.results <- rbind.data.frame(power.results, 
                                           data.frame("Iter" = i, "Chain" = j, 
                                                      "Sample" = i, "Period" = "Post",
                                                      "Coef" = as.numeric(m2$coefficients[2])))
-      }} # end for j and k (4 chains x 250 samples each)
+      } #end k
+      } # end for j and k (4 chains x 250 samples each)
     
-        precoefs <- filter(power.results, Period == "Pre", Iter == i)$Coef
-        postcoefs <- filter(power.results, Period == "Pre", Iter == i)$Coef
+    save(power.results, file = paste0("./Results/PowerResults_", id, ".RData"))
+    
+  
+        precoefs <- dplyr::filter(power.results, Period == "Pre", Iter == i)$Coef
+        postcoefs <- dplyr::filter(power.results, Period == "Post", Iter == i)$Coef
         a1 <- as.numeric(sign(quantile(precoefs, 0.025)) == sign(quantile(precoefs, 0.975)))
         a2 <- as.numeric(sign(quantile(postcoefs, 0.025)) == sign(quantile(postcoefs, 0.975)))
         trend.results <- rbind.data.frame(trend.results,
@@ -58,7 +61,7 @@ calcPower <- function(id){
                                                      "Sig" = a2))
   
     
-    s_pre <- filter(sdf, Iter == i, Year <= cyear)
+    s_pre <- dplyr::filter(sdf, Iter == i, Year <= cyear)
     s_pre_m <- glm(Ntot ~ Year, data = s_pre, family = "poisson")
     trend.results <- rbind.data.frame(trend.results,
                                       data.frame("Iteration" = i,
@@ -66,15 +69,15 @@ calcPower <- function(id){
                                                  "Trend" = as.numeric(s_pre_m$coefficients[2]),
                                                  "Sig" = as.numeric(coef(summary(s_pre_m))[8] < 0.05)))
   
-    s_post <- filter(sdf, Iter == i, Year > cyear)
+    s_post <- dplyr::filter(sdf, Iter == i, Year > cyear)
     s_post_m <- glm(Ntot ~ Year, data = s_post, family = "poisson")
     trend.results <- rbind.data.frame(trend.results,
                                       data.frame("Iteration" = i,
                                                  "Type" = "Sim", "Period" = "Post",
-                                                 "Trend" = as.numeric(s_pre_m$coefficients[2]),
+                                                 "Trend" = as.numeric(s_post_m$coefficients[2]),
                                                  "Sig" = as.numeric(coef(summary(s_post_m))[8] < 0.05)))
   
-    lt_pre <- filter(ltdf, Iter == i, Year <= cyear)
+    lt_pre <- dplyr::filter(ltdf, Iter == i, Year <= cyear)
     lt_pre_m <- glm(Nhat ~ Year, data = lt_pre, family = "quasipoisson")
     trend.results <- rbind.data.frame(trend.results,
                                       data.frame("Iteration" = i,
@@ -82,7 +85,7 @@ calcPower <- function(id){
                                                  "Trend" = as.numeric(lt_pre_m$coefficients[2]),
                                                  "Sig" = as.numeric(coef(summary(lt_pre_m))[8] < 0.05)))
   
-    lt_post <- filter(ltdf, Iter == i, Year > cyear)
+    lt_post <- dplyr::filter(ltdf, Iter == i, Year > cyear)
     lt_post_m <- glm(Nhat ~ Year, data = lt_post, family = "quasipoisson")
     trend.results <- rbind.data.frame(trend.results,
                                       data.frame("Iteration" = i,
@@ -90,7 +93,7 @@ calcPower <- function(id){
                                                  "Trend" = as.numeric(lt_post_m$coefficients[2]),
                                                  "Sig" = as.numeric(coef(summary(lt_post_m))[8] < 0.05)))
   
-    pam_pre <- filter(ltdf, Iter == i, Year <= cyear)
+    pam_pre <- dplyr::filter(ltdf, Iter == i, Year <= cyear)
     pam_pre_m <- glm(Nhat ~ Year, data = pam_pre, family = "quasipoisson")
     trend.results <- rbind.data.frame(trend.results,
                                       data.frame("Iteration" = i,
@@ -98,7 +101,7 @@ calcPower <- function(id){
                                                  "Trend" = as.numeric(pam_pre_m$coefficients[2]),
                                                  "Sig" = as.numeric(coef(summary(pam_pre_m))[8] < 0.05)))
   
-    pam_post <- filter(pamdf, Iter == i, Year > cyear)
+    pam_post <- dplyr::filter(pamdf, Iter == i, Year > cyear)
     pam_post_m <- glm(Nhat ~ Year, data = pam_post, family = "quasipoisson")
     trend.results <- rbind.data.frame(trend.results,
                                       data.frame("Iteration" = i,
@@ -106,7 +109,7 @@ calcPower <- function(id){
                                                  "Trend" = as.numeric(pam_post_m$coefficients[2]),
                                                  "Sig" = as.numeric(coef(summary(pam_post_m))[8] < 0.05)))
   
-    ipm_pre <- filter(rdf, Iter == i, Year <= cyear)
+    ipm_pre <- dplyr::filter(rdf, Iter == i, Year <= cyear)
     ipm_pre_m <- glm(Ntot ~ Year, data = ipm_pre, family = "quasipoisson")
     trend.results <- rbind.data.frame(trend.results,
                                       data.frame("Iteration" = i,
@@ -114,7 +117,7 @@ calcPower <- function(id){
                                                  "Trend" = as.numeric(ipm_pre_m$coefficients[2]),
                                                  "Sig" = as.numeric(coef(summary(ipm_pre_m))[8] < 0.05)))
     
-    ipm_post <- filter(rdf, Iter == i, Year > cyear)
+    ipm_post <- dplyr::filter(rdf, Iter == i, Year > cyear)
     ipm_post_m <- glm(Ntot ~ Year, data = ipm_post, family = "quasipoisson")
     trend.results <- rbind.data.frame(trend.results,
                                       data.frame("Iteration" = i,
