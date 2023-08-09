@@ -4,8 +4,8 @@ procResults <- function(id, CVLT, CVPAM){
   library(tidyr)
   library(runjags)
   
-  #id <- "D50_LCP_40Yrs_2023-07-23"
-  nsim <- 1
+  id <- "D50_LCP_Ideal1_2023-07-27"
+  nsim <- 100
   # TODO read in excel spreadsheet to get info re nsim and CVs
   
   #########################
@@ -15,6 +15,7 @@ procResults <- function(id, CVLT, CVPAM){
   
   # Ntot and K model results
   rdf <- data.frame()
+  mdf <- data.frame()
   # simulated population (A + B)
   sdf <- data.frame()
   # region B info from simulation
@@ -38,6 +39,20 @@ procResults <- function(id, CVLT, CVPAM){
     c3 <- data.frame(r$chain3, "Chain" = 3, "Sample" = 1:nrow(r$chain3))
     c4 <- data.frame(r$chain4, "Chain" = 4, "Sample" = 1:nrow(r$chain4))
     
+    fsamples <- rbind.data.frame(c1, c2, c3, c4) %>%
+      select(Chain, Sample, which(substr(names(c1), 1, 2) == "ft")) %>%
+      rename_with(~gsub("ft.", "", .x, fixed = TRUE)) %>%
+      pivot_longer(cols = paste0(1:99, "."), names_to = "Year", values_to = "ft") %>%
+      mutate(Year = as.numeric(Year)) %>%
+      mutate(Iter = i)
+    
+    nsamples <- rbind.data.frame(c1, c2, c3, c4) %>%
+      select(Chain, Sample, which(substr(names(c1), 1, 2) == "ft")) %>%
+      rename_with(~gsub("ft.", "", .x, fixed = TRUE)) %>%
+      pivot_longer(cols = paste0(1:99, "."), names_to = "Year", values_to = "ft") %>%
+      mutate(Year = as.numeric(Year)) %>%
+      mutate(Iter = i)
+    
     samples <- rbind.data.frame(c1, c2, c3, c4) %>% 
       select(K1, K2, S2, PCap, Chain, Sample) %>%
       mutate("Iter" = i)
@@ -48,8 +63,25 @@ procResults <- function(id, CVLT, CVPAM){
       pivot_longer(cols = paste0(1:100, "."), names_to = "Year", values_to = "Ntot") %>%
       mutate(Year = as.numeric(Year)) %>%
       mutate("Iter" = i)
+    
+    ftN <- left_join(Nsamples, fsamples, by = c("Chain", "Sample", "Year", "Iter"))
+    
+    K1vals <- select(samples, K1, Chain, Sample, Iter)
+    K2vals <- select(samples, K2, Chain, Sample, Iter)
+    
+    d1 <- filter(ftN, Year %in% 1:50) %>% left_join(K1vals, by = c("Chain", "Sample", "Iter"))
+    d2 <- filter(ftN, Year %in% 51:100) %>% left_join(K2vals, by = c("Chain", "Sample", "Iter"))
+    
+    d1$NK <- d1$Ntot/d1$K1
+    d2$NK <- d2$Ntot/d2$K2
+    
+    plot(d1$NK, d1$ft)
+    plot(d2$NK, d2$ft)
   
     Ndf <- rbind.data.frame(Ndf, Nsamples)
+    
+    mean.ndf <- Ndf %>% filter(Iter == i) %>% group_by(Year) %>%
+      summarize(Mean = mean(Ntot), .groups = "keep")
     
     pardf <- rbind.data.frame(pardf, samples)
     
@@ -76,7 +108,7 @@ procResults <- function(id, CVLT, CVPAM){
                                        which(colnames(qdf)=="97.5%")], 50)))
     
     rdf <- rbind.data.frame(rdf, data.frame("Iter" = i, ndf))
-    
+    mdf <- rbind.data.frame(mdf, cbind("Iter" = i, mean.ndf))
     
     sdf <- rbind.data.frame(sdf, simdata[[i]]$NSim %>%
                               pivot_wider(names_from = Region, values_from = N) %>%
@@ -103,7 +135,7 @@ procResults <- function(id, CVLT, CVPAM){
   } # end for i
   
   results.out <- list(pardf = pardf, qdf = qdf, rdf = rdf, ndf = ndf, rdf = rdf, 
-                      sdf = sdf, bdf = bdf, ltdf = ltdf, pamdf = pamdf, Ndf = Ndf)
+                      sdf = sdf, bdf = bdf, ltdf = ltdf, pamdf = pamdf, Ndf = Ndf, mdf = mdf)
   
-  save(results.out, file = paste0("./Results/ProcResults_", id, ".RData"))
+  save(results.out, file = paste0("./Results/ProcResultsMEAN_", id, ".RData"))
 }

@@ -33,9 +33,8 @@ runNimble <- function(simdata,
     }
   } else {Y <- NULL; Find <- NULL; ncryears <- NULL} # end if caprecap
   
-
-  Kdefault <- max(simdata$LTData$Nhat, simdata$PAMData$Nhat*2)
-  Ndefault <- simPop(K = round(Kdefault), new = TRUE, nyears = nyears)  
+  #Kdefault <- max(simdata$LTData$Nhat, simdata$PAMData$Nhat*2)
+  Ndefault <- simPop(K = 225, new = TRUE, nyears = nyears)  
   # stopping here -- need to figure out how to get info out of list if NULL
   # or make different versions of data list depending on which data are provided?
   nimbleData <- list(ltestN = simdata$LTData$Nhat, ltestSD = simdata$LTData$SD, 
@@ -56,7 +55,7 @@ runNimble <- function(simdata,
                       K2_scalar = 1, 
                       N = round(Ndefault), Ntot = rowSums(Ndefault))
   
-  nimbleParams <- list("S2", "K1", "K2", "PCap", "Ntot", "ft", "f0")
+  nimbleParams <- list("S2", "K1", "K2", "PCap", "Ntot", "ft", "f0", "calves", "noncalves")
   
   model <- nimbleModel(code = ipm,
                        constants = nimbleConstants,

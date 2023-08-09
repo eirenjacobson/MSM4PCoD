@@ -2,7 +2,7 @@
 # Script to simulate one year of calf ratio data
 # note the number of adults comes from simCapRecap
 # this function just returns number of calves observed
-
+# TODO: change this to match model formulation for obs model
 simCalfRatio <- function(Zmat, pcap){
   
   # Zmat is the population matrix with nrow individuals and nyear columns

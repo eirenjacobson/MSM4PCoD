@@ -10,8 +10,8 @@ tdf <- unique(trend.results) %>%
 
 ggplot(tdf) + 
   geom_point(aes(x=DeltaTrend_Sim, y = DeltaTrend_Sim, fill = factor(Sig_Sim)), pch = 21) + # circle = Sim
-#  geom_point(aes(x= DeltaTrend_Sim, y = DeltaTrend_LT,fill = factor(Sig_LT,)), pch = 22) + # square = LT
-#  geom_point(aes(x=DeltaTrend_Sim, y = DeltaTrend_PAM, fill = factor(Sig_PAM)), pch = 23)+ # diamond = PAM
+  geom_point(aes(x= DeltaTrend_Sim, y = DeltaTrend_LT,fill = factor(Sig_LT,)), pch = 22) + # square = LT
+  geom_point(aes(x=DeltaTrend_Sim, y = DeltaTrend_PAM, fill = factor(Sig_PAM)), pch = 23)+ # diamond = PAM
   geom_point(aes(x= DeltaTrend_Sim, y = DeltaTrend_IPM, fill = factor(Sig_IPM)), pch = 24)+ # triangle = IPM
   xlab("Simulated Delta Trend")+
   ylab("Estimated Delta Trend")+

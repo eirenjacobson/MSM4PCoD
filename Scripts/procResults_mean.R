@@ -4,8 +4,8 @@ procResults <- function(id, CVLT, CVPAM){
   library(tidyr)
   library(runjags)
   
-  #id <- "D50_LCP_40Yrs_2023-07-23"
-  nsim <- 1
+#  id <- "D50_LCP_Ideal1_2023-07-27"
+  nsim <- 100
   # TODO read in excel spreadsheet to get info re nsim and CVs
   
   #########################
@@ -15,6 +15,7 @@ procResults <- function(id, CVLT, CVPAM){
   
   # Ntot and K model results
   rdf <- data.frame()
+  mdf <- data.frame()
   # simulated population (A + B)
   sdf <- data.frame()
   # region B info from simulation
@@ -51,6 +52,9 @@ procResults <- function(id, CVLT, CVPAM){
   
     Ndf <- rbind.data.frame(Ndf, Nsamples)
     
+    mean.ndf <- Ndf %>% filter(Iter == i) %>% group_by(Year) %>%
+      summarize(Mean = mean(Ntot), .groups = "keep")
+    
     pardf <- rbind.data.frame(pardf, samples)
     
     single.mcmc <- combine.mcmc(results[[i]])
@@ -76,7 +80,7 @@ procResults <- function(id, CVLT, CVPAM){
                                        which(colnames(qdf)=="97.5%")], 50)))
     
     rdf <- rbind.data.frame(rdf, data.frame("Iter" = i, ndf))
-    
+    mdf <- rbind.data.frame(mdf, cbind("Iter" = i, mean.ndf))
     
     sdf <- rbind.data.frame(sdf, simdata[[i]]$NSim %>%
                               pivot_wider(names_from = Region, values_from = N) %>%
@@ -105,5 +109,5 @@ procResults <- function(id, CVLT, CVPAM){
   results.out <- list(pardf = pardf, qdf = qdf, rdf = rdf, ndf = ndf, rdf = rdf, 
                       sdf = sdf, bdf = bdf, ltdf = ltdf, pamdf = pamdf, Ndf = Ndf)
   
-  save(results.out, file = paste0("./Results/ProcResults_", id, ".RData"))
+  save(results.out, file = paste0("./Results/ProcResultsMEAN_", id, ".RData"))
 }

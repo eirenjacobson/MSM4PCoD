@@ -27,16 +27,10 @@ ipm <- nimbleCode({
   # Density-dependence affects fecundity according to Pella-Tomlinson
   f0 <- min(fmax, (1-S2)/(S0^(AJU-1) * S1^(ASA-AJU) * S2^(AFR-ASA) * (1-S2^(AMAX-AFR-1))))
   
-  #N[1:nyears, 1:AMAX] <- matrix(rep(NA, nyears*AMAX), ncol=AMAX) # population matrix
-  
-  #P <- matrix(value = NA, nrow = 1, ncol = AMAX)
+  # Calculate proportion in each age class under equilibrium conditions
   P[1] <- 1
   P[2] <- S0
-  # NOTE this will cause problems if AJU is not == 3
-  # could potentially add an if/else statement?
-  #for (i in 3:(AJU-1)){
-  #  P[i] <- S0*(S0^(i-2))
-  #}
+
   for (i in AJU:(ASA-1)){
     P[i] <- S0^length(0:AJU)*S1^length(AJU:i)
   }
@@ -52,11 +46,11 @@ ipm <- nimbleCode({
 
   for (t in 1:(nyears-1)){
     ft[t] <- max(0, f0 + (fmax-f0)*(1-(sum(N[t, 2:AMAX])/K[t])^z)) # fec at t
-    N[t+1, 1] ~ dbin(ft[t], round(sum(N[t, AFR:AMAX]))) # calves
-    #N[t+1, 1] <- round(sum(N[t, AFR:AMAX]))*ft[t]
+    #N[t+1, 1] ~ dbin(ft[t], round(sum(N[t, AFR:AMAX]))) # calves
+    N[t+1, 1] <- round(sum(N[t, AFR:AMAX])*ft[t])
     for (a in 2:AMAX){
-      N[t+1, a] ~ dbin(S[a-1], N[t, a-1]) # juv and adult 
-      #N[t+1, a] <- S[a-1]*N[t, a-1]
+      #N[t+1, a] ~ dbin(S[a-1], N[t, a-1]) # juv and adult 
+      N[t+1, a] <- round(S[a-1]*N[t, a-1])
     } # end for a
     Ntot[t+1] <- sum(N[t+1, 1:AMAX])
   } # end for t
@@ -65,21 +59,19 @@ ipm <- nimbleCode({
   # including calves
   
   for (t in 1:nltyears){
-    trueN[t] <- sum(N[ltyears[t],1:AMAX])
+     trueN[t] <- sum(N[ltyears[t],1:AMAX])
      mu_log_lt[t] <- log(trueN[t]^2/sqrt(trueN[t]^2 + ltestSD[t]^2))
      sigma_log_lt[t] <- sqrt(log(1+(ltestSD[t]^2/trueN[t]^2)))
      ltestN[t] ~ dlnorm(meanlog = mu_log_lt[t], sdlog = sigma_log_lt[t])
-    #ltestN[t] ~ dnorm(trueN[t], ltestSD[t])
   }
   
   # Passive acoustic survey
 
   for (t in 1:npamyears){
     trueNb[t] <- sum(N[pamyears[t],1:AMAX])/2
-    mu_log_pam[t] <- log(trueNb[t]^2/sqrt(trueNb[t]^2 + pamestSD[t]))
+    mu_log_pam[t] <- log(trueNb[t]^2/sqrt(trueNb[t]^2 + pamestSD[t]^2))
     sigma_log_pam[t] <- sqrt(log(1+(pamestSD[t]^2/trueNb[t]^2)))
     pamestN[t] ~ dlnorm(meanlog = mu_log_pam[t], sdlog = sigma_log_pam[t])
-    #pamestN[t] ~ dnorm(trueNb[t], pamestSD[t])
   }
   
   # Capture-recapture process and observation model
@@ -89,7 +81,12 @@ ipm <- nimbleCode({
   }
   
   for (t in 1:ncryears){
-   NCalves[cryears[t]] ~ dbin(PCap, sum(N[cryears[t], 1:2]))
+    # trials is adults observed (known), P is calf/adult ratio (at time t)
+   modelCalves[t] <- sum(N[cryears[t], 1:2])
+   modelAdults[t] <- sum(N[cryears[t], ASA:AMAX])
+   obsAdults[t] <- sum(Y[,cryears[t]])
+   NCalves[t] ~ dbinom(modelCalves[t]/modelAdults[t], obsAdults[t])
+   
   }
 
 })

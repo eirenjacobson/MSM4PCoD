@@ -56,7 +56,7 @@ runNimble <- function(simdata,
                       K2_scalar = 1, 
                       N = round(Ndefault), Ntot = rowSums(Ndefault))
   
-  nimbleParams <- list("S2", "K1", "K2", "PCap", "Ntot", "ft", "f0")
+  nimbleParams <- list("S2", "K1", "K2", "PCap", "Ntot", "ft", "f0", "modelV")
   
   model <- nimbleModel(code = ipm,
                        constants = nimbleConstants,

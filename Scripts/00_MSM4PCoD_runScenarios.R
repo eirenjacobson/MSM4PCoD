@@ -36,7 +36,9 @@ params <- read_excel(filepath,
 results <- list()
 simdata <- list()
 
-for (i in 1:50){
+stamp <- date(now())
+
+for (i in 1:length(scenarios)){
   
   if(simnewdata == TRUE){simdata <- list()}else{load(simdataloc[i])}
   
@@ -57,7 +59,7 @@ for (i in 1:50){
                   by = pars$pam_int)} else {pamyrs <- NA}
   
 
-  for (j in 1:pars$nsim){
+  for (j in 1){
     print(paste("Beginning iteration", j, "of scenario", scenarios[i]))
     set.seed(paste0("202305", j))
     
@@ -107,13 +109,13 @@ for (i in 1:50){
   save(simdata, file = paste0("./Data/MSM4PCoD_SimData_", 
                               scenarios[i], "_", date(now()), ".RData"))
 
-  id <- paste0(scenarios[i], "_", date(now))
+  id <- paste0(scenarios[i], "_", stamp)
 
   source("./Scripts/procResults.R")
   procResults(id, pars$lt_ecv, pars$pam_ecv)
 
-  source("./Scripts/calcPower.R")
-  calcPower(id)
+  #source("./Scripts/calcPower.R")
+  #calcPower(id)
 
 } # end for i
 
