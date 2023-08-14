@@ -1,7 +1,7 @@
 runIndSim <- function(nyears, cval, Ka_1, Ka_2, Kb_1, Kb_2, 
                       linetrans, linetransyrs, lt_ecv, 
                       caprecap, caprecapyrs, pcap,
-                      pam, pamyrs, pam_ecv){
+                      pam, pamyrs, pam_ecv, pars){
 
 ####
 library(dplyr)
@@ -35,8 +35,8 @@ source("./Scripts/simSurvey.R")
 ############################
 
 # Set vector of carrying capacities
-Ka <- c(rep(Kb_1, nyears/2), rep(Kb_2, nyears/2))
-Kb <- c(rep(Kb_1, nyears/2), rep(Kb_2, nyears/2))
+Ka <- c(rep(Ka_1, pars$cyear), rep(Ka_2, pars$nyears-pars$cyear))
+Kb <- c(rep(Kb_1, pars$cyear), rep(Kb_2, pars$nyears-pars$cyear))
 
 # Set counter for number of animals in each area
 Na_t <- rep(NA, nyears)
@@ -45,8 +45,8 @@ Nb_t <- rep(NA, nyears)
 for (t in 1:nyears){
   # if it's the first year, initialize the population
   if (t == 1){
-    Za_t <- projPop(Zinit = initPop(), nyears = 1)
-    Zb_t <- projPop(Zinit = initPop(), nyears = 1)
+    Za_t <- projPop(Zinit = initPop(), nyears = 1, K = Ka[t])
+    Zb_t <- projPop(Zinit = initPop(), nyears = 1, K = Kb[t])
   } else {
     Za_t <- projPop(Zinit = Za_tplus1, nyears = 1, K = Ka[t])
     Zb_t <- projPop(Zinit = Zb_tplus1, nyears = 1, K = Kb[t])

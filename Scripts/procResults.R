@@ -1,12 +1,18 @@
 
-procResults <- function(id, CVLT, CVPAM){  
+procResults <- function(id, pars){  
   library(dplyr)
   library(tidyr)
   library(runjags)
   
   #id <- "D50_LCP_40Yrs_2023-07-23"
-  nsim <- 1
+  #nsim <- 1
   # TODO read in excel spreadsheet to get info re nsim and CVs
+  
+  CVLT <- pars$lt_ecv
+  CVPAM <- pars$pam_ecv
+  nsim <- pars$nsim
+  cyear <- pars$cyear
+  nyears <- pars$nyears
   
   #########################
   
@@ -45,7 +51,7 @@ procResults <- function(id, CVLT, CVPAM){
     Nsamples <- rbind.data.frame(c1, c2, c3, c4) %>% 
       select(Chain, Sample, which(substr(names(c1), 1, 4) == "Ntot")) %>%
       rename_with(~gsub("Ntot.", "", .x, fixed = TRUE))  %>%
-      pivot_longer(cols = paste0(1:100, "."), names_to = "Year", values_to = "Ntot") %>%
+      pivot_longer(cols = paste0(1:nyears, "."), names_to = "Year", values_to = "Ntot") %>%
       mutate(Year = as.numeric(Year)) %>%
       mutate("Iter" = i)
   
@@ -55,7 +61,7 @@ procResults <- function(id, CVLT, CVPAM){
     
     single.mcmc <- combine.mcmc(results[[i]])
     qdf <- summary(single.mcmc)$quantiles
-    ndf <- data.frame(Year = 1:100,
+    ndf <- data.frame(Year = 1:nyears,
                       Ntot = qdf[which(substr(rownames(qdf), 1, 4) == "Ntot"),
                                  which(colnames(qdf)=="50%")],
                       LCI = qdf[which(substr(rownames(qdf), 1, 4) == "Ntot"),
@@ -63,17 +69,17 @@ procResults <- function(id, CVLT, CVPAM){
                       UCI = qdf[which(substr(rownames(qdf), 1, 4) == "Ntot"),
                                 which(colnames(qdf)=="97.5%")],
                       K = c(rep(qdf[which(rownames(qdf) == "K1"), 
-                                    which(colnames(qdf)=="50%")], 50),
+                                    which(colnames(qdf)=="50%")], cyear),
                             rep(qdf[which(rownames(qdf) == "K2"), 
-                                    which(colnames(qdf)=="50%")], 50)),
+                                    which(colnames(qdf)=="50%")], nyears-cyear)),
                       KLCI = c(rep(qdf[which(rownames(qdf)=="K1"),
-                                       which(colnames(qdf)=="2.5%")], 50),
+                                       which(colnames(qdf)=="2.5%")], cyear),
                                rep(qdf[which(rownames(qdf)=="K2"),
-                                       which(colnames(qdf)=="2.5%")],50)),
+                                       which(colnames(qdf)=="2.5%")],nyears-cyear)),
                       KUCI = c(rep(qdf[which(rownames(qdf)=="K1"),
-                                       which(colnames(qdf)=="97.5%")],50),
+                                       which(colnames(qdf)=="97.5%")],cyear),
                                rep(qdf[which(rownames(qdf)=="K2"),
-                                       which(colnames(qdf)=="97.5%")], 50)))
+                                       which(colnames(qdf)=="97.5%")], nyears-cyear)))
     
     rdf <- rbind.data.frame(rdf, data.frame("Iter" = i, ndf))
     

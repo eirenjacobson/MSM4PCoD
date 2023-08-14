@@ -4,8 +4,8 @@ procResults <- function(id, CVLT, CVPAM){
   library(tidyr)
   library(runjags)
   
-  id <- "D50_LCP_Ideal1_2023-07-27"
-  nsim <- 100
+  #id <- "NULL_LCP_Ideal1_2023-08-09"
+  #nsim <- 100
   # TODO read in excel spreadsheet to get info re nsim and CVs
   
   #########################
@@ -29,6 +29,9 @@ procResults <- function(id, CVLT, CVPAM){
   # all N samples from all iterations
   Ndf <- data.frame()
   
+  cdf <- data.frame()
+  ncdf <- data.frame()
+  
   # create a data frame with results from all iterations
   for (i in 1:nsim){
     
@@ -42,14 +45,14 @@ procResults <- function(id, CVLT, CVPAM){
     fsamples <- rbind.data.frame(c1, c2, c3, c4) %>%
       select(Chain, Sample, which(substr(names(c1), 1, 2) == "ft")) %>%
       rename_with(~gsub("ft.", "", .x, fixed = TRUE)) %>%
-      pivot_longer(cols = paste0(1:99, "."), names_to = "Year", values_to = "ft") %>%
+      pivot_longer(cols = paste0(1:(nyears-1), "."), names_to = "Year", values_to = "ft") %>%
       mutate(Year = as.numeric(Year)) %>%
       mutate(Iter = i)
     
     nsamples <- rbind.data.frame(c1, c2, c3, c4) %>%
       select(Chain, Sample, which(substr(names(c1), 1, 2) == "ft")) %>%
       rename_with(~gsub("ft.", "", .x, fixed = TRUE)) %>%
-      pivot_longer(cols = paste0(1:99, "."), names_to = "Year", values_to = "ft") %>%
+      pivot_longer(cols = paste0(1:(nyears-1), "."), names_to = "Year", values_to = "ft") %>%
       mutate(Year = as.numeric(Year)) %>%
       mutate(Iter = i)
     
@@ -60,7 +63,14 @@ procResults <- function(id, CVLT, CVPAM){
     Nsamples <- rbind.data.frame(c1, c2, c3, c4) %>% 
       select(Chain, Sample, which(substr(names(c1), 1, 4) == "Ntot")) %>%
       rename_with(~gsub("Ntot.", "", .x, fixed = TRUE))  %>%
-      pivot_longer(cols = paste0(1:100, "."), names_to = "Year", values_to = "Ntot") %>%
+      pivot_longer(cols = paste0(1:nyears, "."), names_to = "Year", values_to = "Ntot") %>%
+      mutate(Year = as.numeric(Year)) %>%
+      mutate("Iter" = i)
+    
+    Nncalves <- rbind.data.frame(c1, c2, c3, c4) %>% 
+      select(Chain, Sample, which(substr(names(c1), 1, 9) == "noncalves")) %>%
+      rename_with(~gsub("noncalves.", "", .x, fixed = TRUE)) %>%
+      pivot_longer(cols = paste0(1:99, "."), names_to = "Year", values_to = "Noncalves") %>%
       mutate(Year = as.numeric(Year)) %>%
       mutate("Iter" = i)
     
@@ -69,14 +79,24 @@ procResults <- function(id, CVLT, CVPAM){
     K1vals <- select(samples, K1, Chain, Sample, Iter)
     K2vals <- select(samples, K2, Chain, Sample, Iter)
     
-    d1 <- filter(ftN, Year %in% 1:50) %>% left_join(K1vals, by = c("Chain", "Sample", "Iter"))
-    d2 <- filter(ftN, Year %in% 51:100) %>% left_join(K2vals, by = c("Chain", "Sample", "Iter"))
+    d1 <- filter(ftN, Year %in% 1:cyear) %>% left_join(K1vals, by = c("Chain", "Sample", "Iter")) %>%
+      left_join(filter(Nncalves, Year %in% 1:cyear), by = c("Chain", "Sample", "Year", "Iter"))
     
-    d1$NK <- d1$Ntot/d1$K1
+    d2 <- filter(ftN, Year %in% cyear:nyears) %>% left_join(K2vals, by = c("Chain", "Sample", "Iter"))
+    
+    d1$NK <- d1$Noncalves/d1$K1
     d2$NK <- d2$Ntot/d2$K2
     
-    plot(d1$NK, d1$ft)
-    plot(d2$NK, d2$ft)
+    d1 %>%
+      group_by(Chain, Sample, Iter) %>%
+    ggplot() +
+      geom_line(aes(x=Year, y = NK))
+    
+    
+    plot(nalive/K, ft, col = "red")
+    
+    points(d1$NK, d1$ft)
+    points(d2$NK, d2$ft)
   
     Ndf <- rbind.data.frame(Ndf, Nsamples)
     

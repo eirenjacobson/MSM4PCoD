@@ -16,20 +16,20 @@
   ############################
 
   # years to run simulation
-  nyears <- 1000
+  nyears <- 100
   # connectivity parameter
-  cval <- 0
+  cval <- 1
 
-  Ka_1 <- 1000
-  Kb_1 <- 1000
-  Ka_2 <- 1000
-  Kb_2 <- 1000
+  Ka_1 <- 100
+  Kb_1 <- 100
+  Ka_2 <- 100
+  Kb_2 <- 100
 
   
   ############################
   
   # Set vector of carrying capacities
-  Ka <- c(rep(Kb_1, nyears/2), rep(Kb_2, nyears/2))
+  Ka <- c(rep(Ka_1, nyears/2), rep(Ka_2, nyears/2))
   Kb <- c(rep(Kb_1, nyears/2), rep(Kb_2, nyears/2))
   
   # Set counter for number of animals in each area
@@ -39,8 +39,8 @@
   for (t in 1:nyears){
     # if it's the first year, initialize the population
     if (t == 1){
-      Za_t <- projPop(Zinit = initPop(K=1000), nyears = 1)
-      Zb_t <- projPop(Zinit = initPop(K=1000), nyears = 1)
+      Za_t <- projPop(Zinit = initPop(K=Ka_1), nyears = 1)
+      Zb_t <- projPop(Zinit = initPop(K=Kb_1), nyears = 1)
     } else {
       Za_t <- projPop(Zinit = Za_tplus1, nyears = 1, K = Ka[t])
       Zb_t <- projPop(Zinit = Zb_tplus1, nyears = 1, K = Kb[t])

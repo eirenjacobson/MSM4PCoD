@@ -3,7 +3,7 @@
 # Operates by INDIVIDUALS
 # Last modified by EKJ 2022-08-23
 
-projPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95, 
+projPop <- function(S0 = 0.85, S1 = 0.9, S2 = 0.95, 
                    AFR = 10, AJU = 3, ASA = 5, AMAX = 50,
                    fmax = 0.2, K = 1000, nyears = 1, Zinit = NA){
   
@@ -22,14 +22,15 @@ projPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95,
   z <- 2.39 # degree of compensation
   
   # construct a vector of survival probabilities
-  S <- rep(NA, AMAX-1)
-  S[1:(AJU-1)] <- S0
-  S[AJU:(ASA-1)] <- S1
-  S[ASA:AMAX] <- S2
+  S <- rep(NA, AMAX)
+  S[1:AJU] <- S0
+  S[(AJU+1):ASA] <- S1
+  S[(ASA+1):AMAX] <- S2
+  S[AMAX] <- 0
   
   # Calculate fec at equilibrium according to Eq 3 in Brandon et al
   # Density-dependence affects fecundity according to Pella-Tomlinson
-  f0 <- (1-S2)/(S0^(AJU-1)*S1^(ASA-1)*S2^(AFR-ASA-2))*(1-S2^(AMAX-AFR-2))
+  f0 <- (1-S2) / ( (S0^AJU) * (S1^(ASA-AJU)) * (S2^(AFR-ASA)) * (1-(S2^(AMAX-AFR))) )
   
   # generate a Z matrix with the initial individuals in the upper left
   Z <- matrix(data = rep(0, length = (ncol(Zinit)+nyears)*nrow(Zinit)), 
@@ -46,7 +47,6 @@ projPop <- function(S0 = 0.8, S1 = 0.85, S2 = 0.95,
     ncalves <- 0 # reset calf counter
     ft <- f0 + (fmax-f0)*(1-(nalive/K)^z) # fec at t
     # Keep ft from becoming negative 
-    # TODO: is this the correct formulation for ft?
     ifelse(ft<0, ft <- 0, ft <- ft)
     
     for (i in 1:nrow(Z)){ # loop over each individual

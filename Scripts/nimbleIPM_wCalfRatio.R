@@ -25,7 +25,7 @@ ipm <- nimbleCode({
   
   # Calculate fec at equilibrium according to Eq 3 in Brandon et al
   # Density-dependence affects fecundity according to Pella-Tomlinson
-  f0 <- min(fmax, (1-S2)/(S0^(AJU-1) * S1^(ASA-AJU) * S2^(AFR-ASA) * (1-S2^(AMAX-AFR-1))))
+  f0 <- min(fmax, (1-S2)/(S0^(AJU-1) * S1^(ASA-1) * S2^(AFR-ASA-2) * (1-S2^(AMAX-AFR-2))))
   
   # Calculate proportion in each age class under equilibrium conditions
   P[1] <- 1
