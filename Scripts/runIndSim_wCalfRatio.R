@@ -1,7 +1,7 @@
 runIndSim <- function(nyears, cval, Ka_1, Ka_2, Kb_1, Kb_2, 
                       linetrans, linetransyrs, lt_ecv, 
                       caprecap, caprecapyrs, pcap, calfratio,
-                      pam, pamyrs, pam_ecv){
+                      pam, pamyrs, pam_ecv, pars){
 
 ####
 library(dplyr)
@@ -17,12 +17,28 @@ source("./Scripts/redistributePopInd.R")
 source("./Scripts/simCapRecap.R")
 source("./Scripts/simSurvey.R")
 source("./Scripts/simCalfRatio.R")
+  
+
+############################
+# 
+# # years to run simulation
+# nyears <- 100
+# # connectivity parameter
+# cval <- 1
+# # years in which capture-recapture surveys happen
+# caprecapyrs <- 40:60
+# # capture probability 
+# pcap <- 0.2
+# # years in which line-transect surveys happen
+# linetransyrs <- 40:60
+# ecv <- 0.2
+
 
 ############################
 
 # Set vector of carrying capacities
-Ka <- c(rep(Kb_1, nyears/2), rep(Kb_2, nyears/2))
-Kb <- c(rep(Kb_1, nyears/2), rep(Kb_2, nyears/2))
+Ka <- c(rep(Ka_1, pars$cyear), rep(Ka_2, pars$nyears-pars$cyear))
+Kb <- c(rep(Kb_1, pars$cyear), rep(Kb_2, pars$nyears-pars$cyear))
 
 # Set counter for number of animals in each area
 Na_t <- rep(NA, nyears)
@@ -31,8 +47,8 @@ Nb_t <- rep(NA, nyears)
 for (t in 1:nyears){
   # if it's the first year, initialize the population
   if (t == 1){
-    Za_t <- projPop(Zinit = initPop(), nyears = 1)
-    Zb_t <- projPop(Zinit = initPop(), nyears = 1)
+    Za_t <- projPop(Zinit = initPop(), nyears = 1, K = Ka[t])
+    Zb_t <- projPop(Zinit = initPop(), nyears = 1, K = Kb[t])
   } else {
     Za_t <- projPop(Zinit = Za_tplus1, nyears = 1, K = Ka[t])
     Zb_t <- projPop(Zinit = Zb_tplus1, nyears = 1, K = Kb[t])
@@ -59,17 +75,14 @@ for (t in 1:nyears){
       if (length(IDs) == 0){ cr <- cr} else{
       cr <- rbind.data.frame(cr, 
                                   data.frame("ID" = IDs, "Year" = t, "Cap" = 1))}}
-  }} # end caprecap
-  
-  if(calfratio == TRUE){
+
     if(t == caprecapyrs[1]){
       CalfDF <- data.frame()}
     if(t %in% caprecapyrs){
-      calves <- simCalfRatio(Zmat = Zb_tplus1, pcap = pcap)
-      adults <- nrow(filter(cr, Year == t))
-      CalfDF <- rbind.data.frame(CalfDF, data.frame("Year" = t, "Calves" = calves, "Adults" = adults))
+      obscalves <- simCalfRatio(Zmat = Zb_tplus1, nadults = length(IDs))
+      CalfDF <- rbind.data.frame(CalfDF, data.frame("Year" = t, "ObsCalves" = obscalves))
     }
-  }
+  }}
 
   if(linetrans == TRUE){
   if(t == linetransyrs[1]){

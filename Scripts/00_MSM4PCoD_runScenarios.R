@@ -4,11 +4,11 @@ this_cluster <- makeCluster(4)
 
 ##############
 # path to file containing simulation parameters
-filepath <- "./Data/MSM4PCoD_SimulationParameters.xlsx"
+filepath <- "./Data/MSM4PCoD_SimulationParameters_V3.xlsx"
 # number of scenarios IN THE FILE
-nscenarios <- 20
+nscenarios <- 7
 # names of the scenarios you want to run
-scenarios <- c("NULL_LCP_Ideal1", "D50_LCP_Ideal1")
+scenarios <- "NULL_Ideal"
 # whether to simulate new data
 simnewdata <- TRUE
 # if simnewdata = FALSE, specify where to find datasets (for each scenario)
@@ -80,44 +80,33 @@ for (i in 1:length(scenarios)){
                         pamyrs = pamyrs,
                         pam_ecv = pars$pam_ecv, 
                         pars = pars)}
-# Dave futzing starts here                        
-    results[[j]] <- runNimble(simdata = simdata[[j]],
+
+    results[[j]] <- parLapply(fun=runNimble, X=1:4, cl=this_cluster,
+                              pars = pars,
+                              simdata = simdata[[j]],
                               linetrans = pars$linetrans,
                               caprecap = pars$caprecap,
                               pam = pars$pam,
                               nyears = pars$nyears,
-                              nchains = pars$nchains,
+                              nchains = 1,
                               thin = pars$thin,
                               niter = pars$niter,
-                              nburnin = pars$nburnin, pars = pars)
-    
-    # results[[j]] <- parLapply(fun=runNimble, X=1:4, cl=this_cluster,
-    #                           pars = pars, 
-    #                           simdata = simdata[[j]],
-    #                           linetrans = pars$linetrans,
-    #                           caprecap = pars$caprecap,
-    #                           pam = pars$pam,
-    #                           nyears = pars$nyears,
-    #                           nchains = 1,
-    #                           thin = pars$thin,
-    #                           niter = pars$niter,
-    #                           nburnin = pars$nburnin)
+                              nburnin = pars$nburnin)
     
   } # end for j
   
-  save(results, file = paste0("./Data/MSM4PCoD_Results_", 
-                              scenarios[i], "_", date(now()), ".RData"))
-  
-  save(simdata, file = paste0("./Data/MSM4PCoD_SimData_", 
-                              scenarios[i], "_", date(now()), ".RData"))
-
   id <- paste0(scenarios[i], "_", stamp)
+
+  save(results, file = paste0("./Data/Results_", id, ".RData"))
+  
+  save(simdata, file = paste0("./Data/SimData_", id, ".RData"))
+
 
   source("./Scripts/procResults.R")
   procResults(id, pars)
 
-  #source("./Scripts/calcPower.R")
-  #calcPower(id)
+  source("./Scripts/calcPower_v2.R")
+  calcPower(id)
 
 } # end for i
 

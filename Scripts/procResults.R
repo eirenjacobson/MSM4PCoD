@@ -16,8 +16,8 @@ procResults <- function(id, pars){
   
   #########################
   
-  load(paste0("./Data/MSM4PCoD_Results_", id, ".RData"))
-  load(paste0("./Data/MSM4PCoD_SimData_", id, ".RData"))
+  load(paste0("./Data/Results_", id, ".RData"))
+  load(paste0("./Data/SimData_", id, ".RData"))
   
   # Ntot and K model results
   rdf <- data.frame()
@@ -85,6 +85,7 @@ procResults <- function(id, pars){
     
     
     sdf <- rbind.data.frame(sdf, simdata[[i]]$NSim %>%
+                              select(-K) %>%
                               pivot_wider(names_from = Region, values_from = N) %>%
                               mutate(Ntot = A + B) %>% mutate(Iter = i) %>% select(Iter, Year, Ntot))
     

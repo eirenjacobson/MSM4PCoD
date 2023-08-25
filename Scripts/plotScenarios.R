@@ -6,7 +6,7 @@ library(tidyr)
 library(coda)
 
 
-id <- "NULL_LCP_Ideal1_2023-08-14"
+id <-  "NULL_Ideal_wCalfData_2023-08-23"
 nsim <- 10
 
 folder <- paste0("./Figures/", id)
@@ -77,7 +77,7 @@ for (i in 1:nsim){
   #ggsave(chainplot, filename = paste0(folder, "/chainplot_", i, ".png"), width = 5, height = 3, units = "in")
   
  ggsave(ggarrange(metaplot, subplot, chainplot, parplot, nrow = 2, ncol = 2), 
-         filename = paste0(folder, "/", id, "_", i, "UnconstrainedS2.png"), 
+         filename = paste0(folder, "/", id, "_", i, ".png"), 
          width = 12, height = 8, units = "in")
 
 } # end for i

@@ -1,6 +1,6 @@
 
 # check lognormal transformation
-
+# example target N and CV
   N <- 200
   CV <- 0.3
 
@@ -25,16 +25,21 @@
  
   NEst <- rlnorm(1000, meanlog = mu, sdlog = sigma)  
  
- # now test the likelihood of those observations given differ
+ # now test the likelihood of those observations given different
+ # model estimates of N (these are the i values in the loop)
  # convert each observation to the log scale
   mu_NEst <- NEst
   sigma_NEst <- CV*N
   NEst_log <- log(mu_NEst^2/sqrt(mu_NEst^2 + sigma_NEst^2))
   NEst_sigma_log <- sqrt(log(1+(sigma_NEst^2/mu_NEst^2)))
  
+  LL <- vector()
+  
   for (i in 150:250){
     LL[i] <- sum(dlnorm(NEst, log(i), NEst_sigma_log))
   }
   
   plot(150:250, LL[150:250])
+  
  
+  

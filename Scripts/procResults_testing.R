@@ -10,8 +10,8 @@ procResults <- function(id, CVLT, CVPAM){
   
   #########################
   
-  load(paste0("./Data/MSM4PCoD_Results_", id, ".RData"))
-  load(paste0("./Data/MSM4PCoD_SimData_", id, ".RData"))
+  load(paste0("./Data/Results_", id, ".RData"))
+  load(paste0("./Data/SimData_", id, ".RData"))
   
   # Ntot and K model results
   rdf <- data.frame()
@@ -78,6 +78,15 @@ procResults <- function(id, CVLT, CVPAM){
     
     K1vals <- select(samples, K1, Chain, Sample, Iter)
     K2vals <- select(samples, K2, Chain, Sample, Iter)
+    
+    KvN <- left_join(Nncalves, K1vals, by = c("Chain", "Sample", "Iter")) %>%
+      left_join(K2vals, by = c("Chain", "Sample", "Iter"))
+    
+    ggplot()+
+      geom_point(data = filter(KvN, Year > 50), aes(x=Noncalves, y = K2)) +
+      geom_line(aes(x=170:195, y = 170:195), col = "red")
+    
+    
     
     d1 <- filter(ftN, Year %in% 1:cyear) %>% left_join(K1vals, by = c("Chain", "Sample", "Iter")) %>%
       left_join(filter(Nncalves, Year %in% 1:cyear), by = c("Chain", "Sample", "Year", "Iter"))
