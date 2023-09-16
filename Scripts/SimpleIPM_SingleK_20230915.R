@@ -14,6 +14,8 @@ pamcv <- 0.15
 
 set.seed(20230915)
 
+results <- list()
+
 for (i in 1:10){
 
 pop <- simPop(K = targetN, nyears = nyears)
@@ -22,9 +24,9 @@ N.true <- rowSums(pop$N)
 
 LT.data <- vector()
 PAM.data <- vector()
-for (i in 1:100){
-  LT.data[i] <- simSurvey(N.true[i], ltcv)
-  PAM.data[i] <- simSurvey(N.true[i], pamcv)
+for (j in 1:100){
+  LT.data[j] <- simSurvey(N.true[j], ltcv)
+  PAM.data[j] <- simSurvey(N.true[j], pamcv)
 }
 
 Ndefault <- simPop(K = targetN, nyears = nyears)  
@@ -79,6 +81,7 @@ for (i in 1:10){
 
 ggplot()+
   geom_line(data = N.results, aes(x=Year, y = Noncalves, group = i)) +
-  geom_segment(aes(x = 0, xend = 100, y = K.results$K1, yend = K.results$K1), color = "blue") 
+  geom_segment(aes(x = 0, xend = 100, y = K.results$K1, yend = K.results$K1), color = "blue")+
+  theme_bw()
 
 
