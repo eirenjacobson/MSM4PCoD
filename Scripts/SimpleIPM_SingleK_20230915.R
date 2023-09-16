@@ -12,6 +12,10 @@ nyears <- 100
 ltcv <- 0.35
 pamcv <- 0.15
 
+set.seed(20230915)
+
+for (i in 1:10){
+
 pop <- simPop(K = targetN, nyears = nyears)
 
 N.true <- rowSums(pop$N)
@@ -28,7 +32,7 @@ Ndefault <- simPop(K = targetN, nyears = nyears)
 nimbleData <- list(ltestN = LT.data, ltestSD = LT.data*ltcv, 
                    pamestN = PAM.data, pamestSD = PAM.data*pamcv)
 
-nimbleConstants <- list(cyear = 50, nyears = nyears, S0 = 0.85, S1 = 0.9, AFR = 10,
+nimbleConstants <- list(nyears = nyears, S0 = 0.85, S1 = 0.9, AFR = 10,
                         AJU = 3, ASA = 5, AMAX = 50, fmax = 0.2,  
                         z = 2.39, 
                         ltyears = 1:nyears, nltyears = length(1:nyears),
@@ -41,9 +45,7 @@ nimbleInits <- list(K1_scalar = 1,
 
 nimbleParams <- list("K1",  "noncalves")
 
-set.seed(20230915)
 
-for (i in 1:10){
 
 model <- nimbleModel(code = ipm,
                      constants = nimbleConstants,

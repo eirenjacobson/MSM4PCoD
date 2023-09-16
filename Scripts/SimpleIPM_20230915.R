@@ -12,6 +12,10 @@ nyears <- 100
 ltcv <- 0.35
 pamcv <- 0.15
 
+set.seed(20230915)
+
+for (i in 1:10){
+
 pop <- simPop(K = targetN, nyears = nyears)
 
 N.true <- rowSums(pop$N)
@@ -42,9 +46,7 @@ nimbleInits <- list(K1_scalar = 0.5,
 
 nimbleParams <- list("K1", "K2", "noncalves")
 
-set.seed(20230915)
 
-for (i in 1:10){
 
 model <- nimbleModel(code = ipm,
                      constants = nimbleConstants,
