@@ -36,10 +36,10 @@ ipm <- nimbleCode({
   
   # distribute K1 individuals according to P
   R0 <- K1/sum(P[2:(AMAX+1)])
-  for (i in 1:AMAX){
+  for (i in 1:(AMAX+1)){
     N[1, i] <- P[i]*R0
   }
-  Ntot[1] <- sum(N[1, 1:AMAX])
+  Ntot[1] <- sum(N[1, 1:(AMAX+1)])
 
   # run population forward in time
   for (t in 1:(nyears-1)){
@@ -63,17 +63,19 @@ ipm <- nimbleCode({
      #mu_log_lt[t] <- log(trueN[t]^2/sqrt(trueN[t]^2 + ltestSD[t]^2))
      #sigma_log_lt[t] <- sqrt(log(1+(ltestSD[t]^2/trueN[t]^2)))
      #ltestN[t] ~ dlnorm(meanlog = mu_log_lt[t], sdlog = sigma_log_lt[t])
-    ltestN[t] ~ dlnorm(meanlog = log(trueN[t]), sdlog = log(ltestSD[t]))
+    #ltestN[t] ~ dlnorm(meanlog = log(trueN[t]), sdlog = log(ltestSD[t]))
+    ltestN[t] ~ dnorm(trueN[t], ltestSD[t])
   }
   
   # Passive acoustic survey
 
   for (t in 1:npamyears){
-    trueNb[t] <- Ntot[pamyears[t]]/2
+    trueNb[t] <- Ntot[pamyears[t]]
     #mu_log_pam[t] <- log(trueNb[t]^2/sqrt(trueNb[t]^2 + pamestSD[t]))
     #sigma_log_pam[t] <- sqrt(log(1+(pamestSD[t]^2/trueNb[t]^2)))
     #pamestN[t] ~ dlnorm(meanlog = mu_log_pam[t], sdlog = sigma_log_pam[t])
-    pamestN[t] ~ dlnorm(meanlog = log(trueNb[t]), sdlog = log(pamestSD[t]))
+    #pamestN[t] ~ dlnorm(meanlog = log(trueNb[t]), sdlog = log(pamestSD[t]))
+    pamestN[t] ~ dnorm(trueNb[t], pamestSD[t])
   }
 
 

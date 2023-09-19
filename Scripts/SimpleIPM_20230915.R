@@ -67,7 +67,7 @@ results[[i]] <- nimbleOut
 
 }
 
-K.results <- data.frame("i" = 1:10, "K1" = NA, "K2" = NA)
+K.results <- data.frame("iter" = 1:10, "K1" = NA, "K2" = NA)
 N.results <- data.frame()
 
 for (i in 1:10){
@@ -76,16 +76,15 @@ for (i in 1:10){
   
   K.results[i,] <- c(i, summary(single.mcmc)$quantiles[1,3], 
                     summary(single.mcmc)$quantiles[2,3])
-  N.results <- rbind.data.frame(N.results, data.frame("i" = i, "Year" = 1:(nyears-1), 
+  N.results <- rbind.data.frame(N.results, data.frame("iter" = i, "Year" = 1:(nyears-1), 
                           "Noncalves" = summary(single.mcmc)$quantiles[3:101,3]))
   
 }
 
 
 ggplot()+
-  geom_line(data = N.results, aes(x=Year, y = Noncalves, group = i)) +
+  geom_line(data = N.results, aes(x=Year, y = Noncalves, group = iter)) +
   geom_segment(aes(x = 0, xend = 50, y = K.results$K1, yend = K.results$K1), color = "blue") +
-  geom_segment(aes(x=50, xend = 100, y = K.results$K2, yend = K.results$K2), color = "blue") +
   theme_bw()
 
 
