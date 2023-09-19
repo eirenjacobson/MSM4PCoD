@@ -1,7 +1,9 @@
 library(nimble)
 library(nimbleEcology)
+library(dplyr)
+library(tidyr)
 
-load("./Data/MSM4PCoD_SimData_D50_LCP_2023-06-27.RData")
+load("./Data/SimData_D50B_Real_wCalfData_2023-08-21.RData")
 
 source("./Scripts/cjs.R")
 
@@ -43,7 +45,7 @@ model <- nimbleModel(code = cjs,
 nimbleOut <- nimbleMCMC(model, 
                         monitors = nimbleParams, 
                         constants = nimbleConstants, data = nimbleData,
-                        thin = 10, niter = 10000, nburnin = 9000, nchains = 4,
+                        thin = 10, niter = 20000, nburnin = 19000, nchains = 4,
                         samplesAsCodaMCMC = TRUE)
 
 summary(nimbleOut)
