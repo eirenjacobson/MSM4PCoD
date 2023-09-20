@@ -5,7 +5,7 @@ library(ggplot2)
 
 source("./Scripts/simPop.R")
 source("./Scripts/simSurvey.R")
-source("./Scripts/nimbleIPM_Simple_SingleK_20230915.R")
+source("./Scripts/nimbleIPM_Simple_SingleK_20230918.R")
 
 targetN <- 500
 nyears <- 100
