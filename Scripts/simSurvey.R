@@ -15,8 +15,8 @@ simSurvey <- function(N, CV){
   sigma_X <- CV*N
   
   # transform to mean and sd on the log scale
-  mu <- log(mu_X^2/sqrt(mu_X^2 + sigma_X^2))
-  sigma <- sqrt(log(1+(sigma_X^2/mu_X^2)))
+  #mu <- log(mu_X^2/sqrt(mu_X^2 + sigma_X^2))
+  #sigma <- sqrt(log(1+(sigma_X^2/mu_X^2)))
   
   # check that coverage matches expected CIs
   # C <- exp(1.96 * sqrt(log(1+CV^2)))

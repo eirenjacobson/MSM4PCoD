@@ -38,7 +38,7 @@ simPop <- function(S0 = 0.85, S1 = 0.9, S2 = 0.95,
       P[i] <- prod(S[1:(i-1)])
     }
    
-    R0 <- K/sum(P[2:length(P)])
+    R0 <- K/sum(P[2:(AMAX+1)])
     N[1, ] <- P * R0
       
     ft <-vector()
