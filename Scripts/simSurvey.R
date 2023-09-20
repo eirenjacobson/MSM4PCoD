@@ -12,7 +12,7 @@ simSurvey <- function(N, CV){
   
   # the target mean and sd on the real scale
   mu_X <- N
-  sigma_X <- CV*N
+  sigma_X <- 50
   
   # transform to mean and sd on the log scale
   #mu <- log(mu_X^2/sqrt(mu_X^2 + sigma_X^2))

@@ -2,7 +2,6 @@ library(nimble)
 library(runjags)
 library(ggplot2)
 
-
 source("./Scripts/simPop.R")
 source("./Scripts/simSurvey.R")
 source("./Scripts/nimbleIPM_Simple_20230915.R")

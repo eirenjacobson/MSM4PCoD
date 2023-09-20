@@ -9,10 +9,10 @@ source("./Scripts/nimbleIPM_Simple_SingleK_20230915.R")
 
 targetN <- 500
 nyears <- 100
-ltcv <- 0.35
-pamcv <- 0.15
+ltcv <- 0.1
+pamcv <- 0.1
 
-set.seed(20230915)
+set.seed(20230920)
 
 results <- list()
 
