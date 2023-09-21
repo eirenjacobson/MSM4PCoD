@@ -12,11 +12,11 @@ simSurvey <- function(N, CV){
   
   # the target mean and sd on the real scale
   mu_X <- N
-  sigma_X <- 50
+  sigma_X <- CV*N
   
   # transform to mean and sd on the log scale
-  #mu <- log(mu_X^2/sqrt(mu_X^2 + sigma_X^2))
-  #sigma <- sqrt(log(1+(sigma_X^2/mu_X^2)))
+  mu <- log(mu_X^2/sqrt(mu_X^2 + sigma_X^2))
+  sigma <- sqrt(log(1+(sigma_X^2/mu_X^2)))
   
   # check that coverage matches expected CIs
   # C <- exp(1.96 * sqrt(log(1+CV^2)))
@@ -25,8 +25,8 @@ simSurvey <- function(N, CV){
   # samples <- rlnorm(10000, meanlog = mu, sdlog = sigma)
   # length(samples[which(samples>LCI & samples<UCI)])/length(samples)
   
-  #NEst <- rlnorm(1, meanlog = mu, sdlog = sigma)
-  NEst <- rnorm(1, mean = mu_X, sd = sigma_X)
+  NEst <- rlnorm(1, meanlog = mu, sdlog = sigma)
+  #NEst <- rnorm(1, mean = mu_X, sd = sigma_X)
   
   return(NEst)
   
