@@ -16,7 +16,7 @@ set.seed(20230920)
 
 results <- list()
 
-for (i in 1:10){
+for (i in 1:1){
 
 pop <- simPop(K = targetN, nyears = nyears)
 
@@ -48,7 +48,6 @@ nimbleInits <- list(K1_scalar = 1,
 nimbleParams <- list("K1",  "noncalves")
 
 
-
 model <- nimbleModel(code = ipm,
                      constants = nimbleConstants,
                      data = nimbleData,
@@ -59,7 +58,7 @@ model <- nimbleModel(code = ipm,
 nimbleOut <- nimbleMCMC(model, 
                         monitors = nimbleParams, 
                         constants = nimbleConstants, data = nimbleData,
-                        thin = 10, niter = 50000, nburnin = 40000, nchains = 4,
+                        thin = 10, niter = 50000, nburnin = 40000, nchains = 1,
                         samplesAsCodaMCMC = TRUE)
 
 results[[i]] <- nimbleOut
@@ -69,7 +68,7 @@ results[[i]] <- nimbleOut
 K.results <- data.frame("i" = 1:10, "K1" = NA)
 N.results <- data.frame()
 
-for (i in 1:10){
+for (i in 1:1){
   
   single.mcmc <- combine.mcmc(results[[i]])
   

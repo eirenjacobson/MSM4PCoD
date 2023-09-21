@@ -25,7 +25,7 @@ simSurvey <- function(N, CV){
   # samples <- rlnorm(10000, meanlog = mu, sdlog = sigma)
   # length(samples[which(samples>LCI & samples<UCI)])/length(samples)
   
-  NEst <- rlnorm(1, meanlog = mu, sdlog = sigma)
+  NEst <- rlnorm(1, meanlog = mu, sdlog = 50)
   #NEst <- rnorm(1, mean = mu_X, sd = sigma_X)
   
   return(NEst)
