@@ -58,7 +58,7 @@ model <- nimbleModel(code = ipm,
 nimbleOut <- nimbleMCMC(model, 
                         monitors = nimbleParams, 
                         constants = nimbleConstants, data = nimbleData,
-                        thin = 10, niter = 50000, nburnin = 40000, nchains = 4,
+                        thin = 10, niter = 50000, nburnin = 40000, nchains = 1,
                         samplesAsCodaMCMC = TRUE)
 
 results[[i]] <- nimbleOut
@@ -80,14 +80,14 @@ for (i in 1:10){
                           "noncalves" = summary(single.mcmc)$quantiles[101:199, 3]))
   
 }
-
-ggplot(data = N.results)+
-  geom_line(aes(x=Year, y = noncalves, group = i)) +
-  geom_line(aes(x=Year, y = noncalves+calves, group = i))+
-  #geom_line(data = K.results, aes(x=1:1, y = K1_Med))+
-#  geom_segment(data = K.results, aes(x = 0, xend = 100, y = K.results$K1, yend = K.results$K1), color = "blue")+
-  facet_wrap(~i)+
-  theme_bw()
+# 
+# ggplot(data = N.results)+
+#   geom_line(aes(x=Year, y = noncalves, group = i)) +
+#   geom_line(aes(x=Year, y = noncalves+calves, group = i))+
+#   #geom_line(data = K.results, aes(x=1:1, y = K1_Med))+
+# #  geom_segment(data = K.results, aes(x = 0, xend = 100, y = K.results$K1, yend = K.results$K1), color = "blue")+
+#   facet_wrap(~i)+
+#   theme_bw()
 
 
 
