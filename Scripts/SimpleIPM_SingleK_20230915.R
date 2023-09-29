@@ -39,7 +39,7 @@ nimbleConstants <- list(nyears = nyears, S0 = 0.85, S1 = 0.9, AFR = 10,
                         z = 2.39, 
                         ltyears = 1:nyears, nltyears = length(1:nyears),
                         pamyears = 1:nyears, npamyears = length(1:nyears),
-                        K_lower = 400,
+                        K_lower = 200,
                         K_upper = 600)
 
 nimbleInits <- list(K1_scalar = 1, 
@@ -86,10 +86,16 @@ for (i in 1:10){
 #   geom_line(aes(x=Year, y = noncalves+calves, group = i))+
 #   #geom_line(data = K.results, aes(x=1:1, y = K1_Med))+
 # #  geom_segment(data = K.results, aes(x = 0, xend = 100, y = K.results$K1, yend = K.results$K1), color = "blue")+
+#   geom_point()
 #   facet_wrap(~i)+
 #   theme_bw()
-
-
+  
+  ggplot(K.results) +
+    geom_errorbar(aes(x = i, ymin = K1_LCI, ymax = K1_UCI), color = "blue") +
+    geom_hline(aes(yintercept = 500))+
+   # ylim(c(0, NULL))+
+    theme_bw()+
+    xlim(c(0,11))
 
 K1_svals <- seq(0.4, 0.6, length.out = 100)
 

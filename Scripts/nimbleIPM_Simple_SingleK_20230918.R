@@ -64,7 +64,7 @@ ipm <- nimbleCode({
      sigma_log_lt[t] <- sqrt(log(1+(ltestSD[t]^2/trueN[t]^2)))
      #ltestN[t] ~ dlnorm(meanlog = mu_log_lt[t], sdlog = sigma_log_lt[t])
     #ltestN[t] ~ dlnorm(meanlog = log(trueN[t]), sdlog = sigma_log_lt[t])
-    ltestN[t] ~ dnorm(trueN[t], sd = 50)
+    ltestN[t] ~ dlnorm(meanlog = log(trueN[t]), sdlog = sigma_log_lt[t] )
   }
   
   # Passive acoustic survey
@@ -75,7 +75,7 @@ ipm <- nimbleCode({
     sigma_log_pam[t] <- sqrt(log(1+(pamestSD[t]^2/trueNb[t]^2)))
     #pamestN[t] ~ dlnorm(meanlog = mu_log_pam[t], sdlog = sigma_log_pam[t])
     #pamestN[t] ~ dlnorm(meanlog = log(trueNb[t]), sdlog = sigma_log_pam[t])
-    pamestN[t] ~ dnorm(trueNb[t], sd = 50)
+    pamestN[t] ~ dlnorm(meanlog = log(trueNb[t]), sdlog =  sigma_log_pam[t])
   }
 
 
