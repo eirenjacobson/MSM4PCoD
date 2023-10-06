@@ -15,22 +15,21 @@ pamcv <- 0.1
 
 set.seed(20230915)
 
+results <- list()
 power.results <- list()
 
 Kvectors <- list()
-Kvectors[[1]] <- c(rep(500, 50), rep(550, 50))
-Kvectors[[2]] <- c(rep(500, 50), rep(540, 50))
-Kvectors[[3]] <- c(rep(500, 50), rep(530, 50))
-Kvectors[[4]] <- c(rep(500, 50), rep(520, 50))
-Kvectors[[5]] <- c(rep(500, 50), rep(510, 50))
+Kvectors[[1]] <- c(rep(500, 50), rep(750, 50))
+Kvectors[[2]] <- c(rep(500, 50), rep(700, 50))
+Kvectors[[3]] <- c(rep(500, 50), rep(650, 50))
+Kvectors[[4]] <- c(rep(500, 50), rep(600, 50))
+Kvectors[[5]] <- c(rep(500, 50), rep(550, 50))
 Kvectors[[6]] <- rep(500, 100)
-Kvectors[[7]] <- c(rep(500, 50), rep(490, 50))
-Kvectors[[8]] <- c(rep(500, 50), rep(480, 50))
-Kvectors[[9]] <- c(rep(500, 50), rep(470, 50))
-Kvectors[[10]] <- c(rep(500, 50), rep(460, 50))
-Kvectors[[11]] <- c(rep(500, 50), rep(450, 50))
-
-
+Kvectors[[7]] <- c(rep(500, 50), rep(450, 50))
+Kvectors[[8]] <- c(rep(500, 50), rep(400, 50))
+Kvectors[[9]] <- c(rep(500, 50), rep(350, 50))
+Kvectors[[10]] <- c(rep(500, 50), rep(300, 50))
+Kvectors[[11]] <- c(rep(500, 50), rep(250, 50))
 
 
 for (k in 1:11){
@@ -161,10 +160,10 @@ power.results[[k]] <- list(trend.results = trend.results, K.results = K.results,
 
 } # end for k
 
-save(power.results, file = "./Data/powerresults_SimpleIPM_20230929.RData")
+save(power.results, file = "./Data/powerresults_SimpleIPM_20231003.RData")
 
 megatrend <- data.frame()
-for (i in 1:5){
+for (i in 1:11){
   
   r <- power.results[[i]]$trend.results
   r$simchange <- (Kvectors[[i]][100]-500)/500
@@ -183,3 +182,13 @@ megatrend %>% group_by(simchange) %>% summarize(power = sum(Sig)/10)
 #   theme_bw()+
 #   xlim(c(0,11))
 # }
+
+model <- glm(Sig ~ DeltaTrend, data = filter(megatrend, megatrend$simchange<=0), family = "binomial")
+
+newdata <- data.frame(DeltaTrend = seq(-0.01, 0, by = 0.0001))
+
+newdata$Pred <- predict(model, newdata = newdata)
+newdata$P <- 1/(1+exp(-(model$coefficients[1]*newdata$DeltaTrend)))
+
+plot(newdata$DeltaTrend, newdata$P, ylim = c(0,1))
+points(megatrend$DeltaTrend, megatrend$Sig, pch = 21)

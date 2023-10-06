@@ -5,7 +5,7 @@ calcPower <- function(id){
   library(foreach)
   library(doParallel)
   #id <- "D50_LCP_2023-06-27"
-  nsim <- 50
+  nsim <- 100
   
   registerDoParallel(cores=10)
   #id <- "D75_LCP_MidCval_2023-07-20"

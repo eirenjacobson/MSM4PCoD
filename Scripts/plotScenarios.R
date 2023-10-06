@@ -6,7 +6,7 @@ library(tidyr)
 library(coda)
 
 
-id <-  "NULL_Ideal_wCalfData_2023-08-23"
+id <-  "NULL_Ideal_wCalfData_2023-10-03"
 nsim <- 10
 
 folder <- paste0("./Figures/", id)

@@ -90,7 +90,8 @@ for (t in 1:nyears){
   if (t %in% linetransyrs){
         LTEst <- simSurvey(N = Na_t[t] + Nb_t[t], CV = lt_ecv)
         LTNhat$Nhat[linetransyrs == t] <- LTEst
-        LTNhat$SD[linetransyrs == t] <- lt_ecv*LTEst
+        LTNhat$SD[linetransyrs == t] <- lt_ecv*(Na_t[t]+Nb_t[t])
+        LTNhat$SDLog[linetransyrs == t] <- sqrt(log(1+(lt_ecv*(Na_t[t]+Nb_t[t]))^2/(Na_t[t]+Nb_t[t])^2))
   }} # end line transect
   
   if(pam == TRUE){
@@ -99,7 +100,8 @@ for (t in 1:nyears){
   if (t %in% pamyrs){
     PAMEst <- simSurvey(N = Nb_t[t], CV = pam_ecv)
     PAMNhat$Nhat[pamyrs == t] <- PAMEst
-    PAMNhat$SD[pamyrs == t] <- pam_ecv*PAMEst
+    PAMNhat$SD[pamyrs == t] <- pam_ecv*Nb_t[t]
+    PAMNhat$SDLog[pamyrs == t] <- sqrt(log(1+(pam_ecv*Nb_t[t])^2/Nb_t[t]^2))
   }} # end passive acoustic monitoring
   
 } # end for t

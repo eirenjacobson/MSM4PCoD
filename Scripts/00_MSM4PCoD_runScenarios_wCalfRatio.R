@@ -6,7 +6,7 @@ this_cluster <- makeCluster(4)
 # path to file containing simulation parameters
 filepath <- "./Data/MSM4PCoD_SimulationParameters_V3.xlsx"
 # number of scenarios IN THE FILE
-nscenarios <- 5
+nscenarios <- 7
 # names of the scenarios you want to run
 scenarios <- c("NULL_Ideal")
 # whether to simulate new data

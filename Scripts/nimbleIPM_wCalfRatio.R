@@ -65,7 +65,7 @@ ipm <- nimbleCode({
     #mu_log_lt[t] <- log(trueN[t]^2/sqrt(trueN[t]^2 + ltestSD[t]^2))
     #sigma_log_lt[t] <- sqrt(log(1+(ltestSD[t]^2/trueN[t]^2)))
     #ltestN[t] ~ dlnorm(meanlog = mu_log_lt[t], sdlog = sigma_log_lt[t])
-    ltestN[t] ~ dlnorm(meanlog = log(trueN[t]), sdlog = log(ltestSD[t]))
+    ltestN[t] ~ dlnorm(meanlog = log(trueN[t]), sdlog = ltestSDlog[t])
   }
   
   # Passive acoustic survey
@@ -75,7 +75,7 @@ ipm <- nimbleCode({
     #mu_log_pam[t] <- log(trueNb[t]^2/sqrt(trueNb[t]^2 + pamestSD[t]))
     #sigma_log_pam[t] <- sqrt(log(1+(pamestSD[t]^2/trueNb[t]^2)))
     #pamestN[t] ~ dlnorm(meanlog = mu_log_pam[t], sdlog = sigma_log_pam[t])
-    pamestN[t] ~ dlnorm(meanlog = log(trueNb[t]), sdlog = log(pamestSD[t]))
+    pamestN[t] ~ dlnorm(meanlog = log(trueNb[t]), sdlog = pamestSDlog[t])
   }
   
   # Capture-recapture process and observation model
