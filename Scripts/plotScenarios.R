@@ -6,11 +6,22 @@ library(tidyr)
 library(coda)
 
 
-id <-  "NULL_Ideal_wCalfData_2023-10-06"
+id <-  "D50AB_Real_wCalfData_2023-10-11"
 nsim <- 10
 
-folder <- paste0("./Figures/", id)
 load(paste0("./Results/ProcResults_", id, ".RData"))
+
+
+folder <- paste0("./Figures/", id)
+
+
+if (file.exists(folder)){
+  
+} else {
+  dir.create(file.path(folder))
+  
+}
+
 
 sdf <- results.out$sdf
 ltdf <- results.out$ltdf
