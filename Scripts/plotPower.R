@@ -3,7 +3,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 
-id <- "NULL_Ideal_wCalfData_2023-08-21"
+id <- "D50B_Real_wCalfData_2023-10-05"
 
 load(paste0("./Results/Trend_", id, ".RData"))
 
@@ -25,9 +25,9 @@ p1 <- ggplot(tdf) +
 tdf <- unique(trend.results) %>% 
   pivot_wider(names_from = Type, values_from = c(DeltaTrend, Sig)) 
 
-pow_ipm <- glm(Sig_IPM ~ DeltaTrend_Sim, data = tdf, family = "binomial")
-pow_pam <- glm(Sig_PAM ~ DeltaTrend_Sim, data = tdf, family = "binomial")
-pow_lt <- glm(Sig_LT ~ DeltaTrend_Sim, data = tdf, family = "binomial")
+pow_ipm <- glm(Sig_IPM ~ DeltaTrend_Sim, data = filter(tdf, DeltaTrend_Sim<=0), family = "binomial")
+pow_pam <- glm(Sig_PAM ~ DeltaTrend_Sim, data = filter(tdf, DeltaTrend_Sim<=0), family = "binomial")
+pow_lt <- glm(Sig_LT ~ DeltaTrend_Sim, data = filter(tdf, DeltaTrend_Sim<=0), family = "binomial")
 newdata <- data.frame("DeltaTrend_Sim" = seq(-0.05, 0, by = 0.001))
 newdata$IPM_Pred <- predict(pow_ipm, newdata = newdata, type = "response")
 newdata$PAM_Pred <- predict(pow_pam, newdata=newdata, type = "response")

@@ -76,22 +76,24 @@ for (t in 1:nyears){
   }} # end caprecap
 
   if(linetrans == TRUE){
-  if(t == linetransyrs[1]){
-    {LTNhat <- data.frame("Year" = linetransyrs, "Nhat" = NA, "SD" = NA)}}
-  if (t %in% linetransyrs){
-        LTEst <- simSurvey(N = Na_t[t] + Nb_t[t], CV = lt_ecv)
-        LTNhat$Nhat[linetransyrs == t] <- LTEst
-        LTNhat$SD[linetransyrs == t] <- lt_ecv*LTEst
-  }} # end line transect
+    if(t == linetransyrs[1]){
+      {LTNhat <- data.frame("Year" = linetransyrs, "Nhat" = NA, "SD" = NA)}}
+    if (t %in% linetransyrs){
+      LTEst <- simSurvey(N = Na_t[t] + Nb_t[t], SD = lt_ecv*(Ka_1+Kb_1))
+      LTNhat$Nhat[linetransyrs == t] <- LTEst
+      LTNhat$SD[linetransyrs == t] <- lt_ecv*(Ka_1+Kb_1)
+      LTNhat$SDLog[linetransyrs == t] <- sqrt(log(1+(lt_ecv*(Ka_1+Kb_1))^2/(Ka_1+Kb_1)^2))
+    }} # end line transect
   
   if(pam == TRUE){
-  if(t == pamyrs[1]){
-    {PAMNhat <- data.frame("Year" = pamyrs, "Nhat" = NA, "SD" = NA)}}
-  if (t %in% pamyrs){
-    PAMEst <- simSurvey(N = Nb_t[t], CV = pam_ecv)
-    PAMNhat$Nhat[pamyrs == t] <- PAMEst
-    PAMNhat$SD[pamyrs == t] <- pam_ecv*PAMEst
-  }} # end passive acoustic monitoring
+    if(t == pamyrs[1]){
+      {PAMNhat <- data.frame("Year" = pamyrs, "Nhat" = NA, "SD" = NA)}}
+    if (t %in% pamyrs){
+      PAMEst <- simSurvey(N = Nb_t[t], SD = pam_ecv*(Kb_1))
+      PAMNhat$Nhat[pamyrs == t] <- PAMEst
+      PAMNhat$SD[pamyrs == t] <- pam_ecv*Kb_1
+      PAMNhat$SDLog[pamyrs == t] <- sqrt(log(1+(pam_ecv*Kb_1)^2/Kb_1^2))
+    }} # end passive acoustic monitoring
   
 } # end for t
 

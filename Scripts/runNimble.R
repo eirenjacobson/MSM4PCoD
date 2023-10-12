@@ -37,9 +37,9 @@ runNimble <- function(pars, simdata,
   Ndefault <- simPop(K = 200, nyears = pars$nyears)  
   # stopping here -- need to figure out how to get info out of list if NULL
   # or make different versions of data list depending on which data are provided?
-  nimbleData <- list(ltestN = simdata$LTData$Nhat, ltestSD = simdata$LTData$SD, 
+  nimbleData <- list(ltestN = simdata$LTData$Nhat, ltestSDlog = simdata$LTData$SDLog, 
                      Y = Y, 
-                     pamestN = simdata$PAMData$Nhat, pamestSD = simdata$PAMData$SD)
+                     pamestN = simdata$PAMData$Nhat, pamestSDlog = simdata$PAMData$SDLog)
 
     nimbleConstants <- list(cyear = pars$cyear, nyears = pars$nyears, S0 = 0.85, S1 = 0.9, AFR = 10,
                           AJU = 3, ASA = 5, AMAX = 50, fmax = 0.2,  

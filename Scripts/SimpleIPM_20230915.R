@@ -19,7 +19,7 @@ results <- list()
 power.results <- list()
 
 Kvectors <- list()
-Kvectors[[1]] <- c(rep(500, 50), rep(750, 50))
+Kvectors[[1]] <- c(rep(500, 50), rep(770, 50))
 Kvectors[[2]] <- c(rep(500, 50), rep(700, 50))
 Kvectors[[3]] <- c(rep(500, 50), rep(650, 50))
 Kvectors[[4]] <- c(rep(500, 50), rep(600, 50))

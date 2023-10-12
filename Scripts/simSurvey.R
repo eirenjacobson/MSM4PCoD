@@ -2,7 +2,7 @@
 # generic function to simulate data collection given true N and expected CV
 # returns a single survey estimate NEst drawn from a lognormal distribution
 
-simSurvey <- function(N, CV){
+simSurvey <- function(N, SD){
   
   # N is (true/simulated) population size, assumed to be estimated without bias
   # CV is the expected CV of a survey
@@ -12,7 +12,7 @@ simSurvey <- function(N, CV){
   
   # the target mean and sd on the real scale
   mu_X <- N
-  sigma_X <- CV*N
+  sigma_X <- SD
   
   # transform to mean and sd on the log scale
   mu <- log(mu_X^2/sqrt(mu_X^2 + sigma_X^2))
