@@ -1,9 +1,12 @@
 
-library(dplyr)
-library(tidyr)
-library(ggplot2)
+id <- "D50AB_Real_2023-10-13"
 
-id <- "NULL_Real_2023-10-13"
+plotPower <- function(id){
+  library(dplyr)
+  library(tidyr)
+  library(ggplot2)
+  library(ggpubr)
+
 
 load(paste0("./Results/Trend_", id, ".RData"))
 
@@ -36,8 +39,10 @@ newdata$LT_Pred <- predict(pow_lt, newdata=newdata, type = "response")
 nd <- newdata %>% pivot_longer(cols = c("IPM_Pred", "PAM_Pred", "LT_Pred"), names_to = "Type", values_to = "Pred")
 
 p2 <- ggplot(nd) +
-  geom_line(aes(x=DeltaTrend_Sim, y = Pred, color = Type)) +
+  geom_line(aes(x=abs(DeltaTrend_Sim), y = Pred, color = Type)) +
   theme_bw() +
+  xlab("Simulated Annual Decline") +
+  ylab("Predicted Power")+
   ylim(c(0,1))
 
 ggsave(ggarrange(p1, p2, ncol = 2), 
@@ -46,3 +51,4 @@ ggsave(ggarrange(p1, p2, ncol = 2),
 
 save(tdf, file = paste0("./Results/ObsPower_", id))
 #save(nd, file = paste0("./Results/PredPower_", id))
+}

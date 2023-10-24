@@ -6,7 +6,7 @@ library(tidyr)
 library(coda)
 
 
-id <-  "NULL_Ideal_wCalfData_2023-10-12"
+id <-  "D50B_Freq_wCalfData_2023-10-17"
 nsim <- 10 # number of simulations to plot
 
 load(paste0("./Results/ProcResults_", id, ".RData"))
