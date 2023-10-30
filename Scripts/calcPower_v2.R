@@ -7,7 +7,7 @@ calcPower <- function(id){
   #id <- "D50_LCP_2023-06-27"
   nsim <- 100
   
-  registerDoParallel(cores=10)
+  registerDoParallel(cores=4)
   #id <- "D75_LCP_MidCval_2023-07-20"
   #load(paste0("./Documents/MSM4PCoD/Results/ProcResults_", id, ".RData")) #results.out
   load(paste0("./Results/ProcResults_", id, ".RData")) #results.out
