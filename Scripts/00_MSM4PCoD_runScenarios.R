@@ -1,12 +1,13 @@
 
 library(parallel)
-this_cluster <- makeCluster(4)
+ncores <- 4
+this_cluster <- makeCluster(ncores)
 
 ##############
 # path to file containing simulation parameters
 filepath <- "./Data/MSM4PCoD_SimulationParameters_V3.xlsx"
 # number of scenarios IN THE FILE
-nscenarios <- 12
+nscenarios <- 21
 # names of the scenarios you want to run
 scenarios <- "NULL_Ideal"
 # whether to simulate new data
@@ -81,7 +82,7 @@ for (i in 1:length(scenarios)){
                         pam_ecv = pars$pam_ecv, 
                         pars = pars)}
 
-    results[[j]] <- parLapply(fun=runNimble, X=1:4, cl=this_cluster,
+    results[[j]] <- parLapply(fun=runNimble, X=1:ncores, cl=this_cluster,
                               pars = pars,
                               simdata = simdata[[j]],
                               linetrans = pars$linetrans,
@@ -106,7 +107,7 @@ for (i in 1:length(scenarios)){
   procResults(id, pars)
 
   source("./Scripts/calcPower_v2.R")
-  calcPower(id)
+  calcPower(id, ncores)
 
 } # end for i
 
