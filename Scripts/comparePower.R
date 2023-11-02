@@ -28,19 +28,23 @@ for (i in 1:nfiles){
   
 } # end for i
 
+pow_ipm <- glm(Sig_IPM ~ DeltaTrend_Sim, 
+               data = filter(data_T1, DeltaTrend_Sim<=0), family = "binomial")
+pow_pam <- glm(Sig_PAM ~ DeltaTrend_Sim, 
+               data = filter(data_T1, DeltaTrend_Sim<=0), family = "binomial")
+pow_lt <- glm(Sig_LT ~ DeltaTrend_Sim, 
+              data = filter(data_T1, DeltaTrend_Sim<=0), family = "binomial")
 
-pow_ipm <- glm(Sig_IPM ~ DeltaTrend_Sim, data = filter(data_T1, DeltaTrend_Sim<=0), family = "binomial")
-pow_pam <- glm(Sig_PAM ~ DeltaTrend_Sim, data = filter(data_T1, DeltaTrend_Sim<=0), family = "binomial")
-pow_lt <- glm(Sig_LT ~ DeltaTrend_Sim, data = filter(data_T1, DeltaTrend_Sim<=0), family = "binomial")
-newdata <- data.frame("DeltaTrend_Sim" = seq(range(data_T1$DeltaTrend_Sim)[1], 0, by = 0.001))
+newdata <- data.frame("DeltaTrend_Sim" = 
+                        seq(range(data_T1$DeltaTrend_Sim)[1], 0, by = 0.001))
 newdata$IPM_Pred <- predict(pow_ipm, newdata = newdata, type = "response")
 newdata$PAM_Pred <- predict(pow_pam, newdata=newdata, type = "response")
 newdata$LT_Pred <- predict(pow_lt, newdata=newdata, type = "response")
 
 nd_1 <- newdata %>% 
-  pivot_longer(cols = c("IPM_Pred", "PAM_Pred", "LT_Pred"), names_to = "Type", values_to = "Pred") %>%
+  pivot_longer(cols = c("IPM_Pred", "PAM_Pred", "LT_Pred"), 
+               names_to = "Type", values_to = "Pred") %>%
   mutate(CalfRatio = FALSE)
-
 
 nfiles <- length(ids_T2)
 
@@ -54,7 +58,6 @@ for (i in 1:nfiles){
   
 } # end for i
 
-
 pow_ipm <- glm(Sig_IPM ~ DeltaTrend_Sim, data = filter(data_T2, DeltaTrend_Sim<=0), family = "binomial")
 pow_pam <- glm(Sig_PAM ~ DeltaTrend_Sim, data = filter(data_T2, DeltaTrend_Sim<=0), family = "binomial")
 pow_lt <- glm(Sig_LT ~ DeltaTrend_Sim, data = filter(data_T2, DeltaTrend_Sim<=0), family = "binomial")
@@ -67,21 +70,15 @@ nd_2 <- newdata %>%
   pivot_longer(cols = c("IPM_Pred", "PAM_Pred", "LT_Pred"), names_to = "Type", values_to = "Pred") %>%
   mutate(CalfRatio = TRUE)
 
-
-
-
-
 nd <- rbind.data.frame(nd_1, nd_2)
 
-
-
 p2 <- ggplot(filter(nd, Type == "IPM_Pred")) +
-  geom_line(aes(x=abs(DeltaTrend_Sim), y = Pred, color = CalfRatio)) +
+  geom_line(aes(x=abs(DeltaTrend_Sim), y = Pred, color = CalfRatio), lwd = 2) +
   theme_bw() +
   xlab("Simulated Annual Decline") +
   ylab("Predicted Power")+
   ylim(c(0,1))
 
 ggsave(p2, 
-       filename = paste0("./Figures/ComparePowerPlots_wCalfRatio", type, ".png"), 
-       width = 7, height = 6, units = "in")
+       filename = paste0("./Figures/ComparePowerPlots_wCalfRatio_", type, ".png"), 
+       width = 5, height = 3, units = "in")

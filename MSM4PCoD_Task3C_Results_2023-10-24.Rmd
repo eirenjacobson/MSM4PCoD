@@ -16,7 +16,7 @@ source("./Scripts/plotPower.R")
 
 ```{r, fig.align = "center", out.width = "75%", fig.cap = "Comparison of results from a realistic simualation with and without a calf ratio observational submodel"}
 
-include_graphics("./Figures/ComparePowerPlots_wCalfRatioReal.png")
+include_graphics("./Figures/ComparePowerPlots_wCalfRatio_Real.png")
 
 
 ```
@@ -153,3 +153,4 @@ kable(tdata, digits = 2)
 
 include_graphics(paste0("./Figures/CombinedPowerPlots_", type, ".png"))
 ```
+
