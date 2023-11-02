@@ -109,7 +109,7 @@ include_graphics(paste0("./Figures/CombinedPowerPlots_", type, ".png"))
 
 type <- "OptWCalf"
 
-ids <- c("NULL_Opt_wCalfData_2023-10-10", "D50AB_Freq_wCalfData_2023-10-12")
+ids <- c("NULL_Opt_wCalfData_2023-10-10", "D50AB_Opt_wCalfData_2023-10-12")
 
 for (i in 1:length(ids)){
   plotPower(ids[i])
@@ -135,7 +135,7 @@ include_graphics(paste0("./Figures/CombinedPowerPlots_", type, ".png"))
 ```{r}
 
 type <- "20yrRealwCalf"
-ids <- c("NULL_20yrReal_wCalfData_2023-10-20", "D50AB_Freq_wCalfData_2023-10-12")
+ids <- c("NULL_20yrReal_wCalfData_2023-10-20", "D50AB_20yrReal_wCalfData_2023-10-23")
 
 for (i in 1:length(ids)){
   plotPower(ids[i])
