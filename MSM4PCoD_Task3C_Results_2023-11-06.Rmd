@@ -1,7 +1,7 @@
 ---
 title: "MSM4PCoD Task 3C Results"
 output: pdf_document
-date: "2023-10-24"
+date: "2023-11-06"
 ---
 
 ```{r setup, include=FALSE}
@@ -279,5 +279,88 @@ include_graphics(paste0("./Figures/CombinedPowerPlots_", type, ".png"))
 include_graphics("./Figures/ComparePowerPlots_wCalfRatio_Real_Lopcap.png")
 
 
+```
+
+\newpage
+
+## 10y_ShBL_EY w/ Calf
+
+```{r}
+
+source("./Scripts/plotPower_IPMOnly.R")
+source("./Scripts/combinePower_IPMOnly.R")
+
+type <- "10y_ShBL_EY"
+ids <- c("NULL_10y_ShBL_EY_wCalfData_2023-11-05", "D50AB_10y_ShBL_EY_wCalfData_2023-11-05")
+
+for (i in 1:length(ids)){
+  plotPower(ids[i])
+}
+
+combinePower(ids, type)
+
+load(paste0("./Results/CombinedPower_", type, ".RData"))
+
+kable(tdata, digits = 2)
+
+```
+
+```{r, fig.align = 'center', out.width = '75%', fig.cap = "Predicted power for lo pcap w/o calf scenario"}
+
+include_graphics(paste0("./Figures/CombinedPowerPlots_", type, ".png"))
+```
+
+\newpage
+
+## 20y_ShBL_EY w/ Calf
+
+```{r}
+
+
+type <- "20y_ShBL_EY"
+ids <- c("NULL_20y_ShBL_EY_wCalfData_2023-11-05", "D50AB_20y_ShBL_EY_wCalfData_2023-11-05")
+
+for (i in 1:length(ids)){
+  plotPower(ids[i])
+}
+
+combinePower(ids, type)
+
+load(paste0("./Results/CombinedPower_", type, ".RData"))
+
+kable(tdata, digits = 2)
+
+```
+
+```{r, fig.align = 'center', out.width = '75%', fig.cap = "Predicted power for lo pcap w/o calf scenario"}
+
+include_graphics(paste0("./Figures/CombinedPowerPlots_", type, ".png"))
+```
+
+\newpage
+
+## "Actual" w/ Calf
+
+```{r}
+
+
+type <- "Actual"
+ids <- c("NULL_Actual_wCalfData_2023-11-02", "D50AB_Actual_wCalfData_2023-11-02")
+
+for (i in 1:length(ids)){
+  plotPower(ids[i])
+}
+
+combinePower(ids, type)
+
+load(paste0("./Results/CombinedPower_", type, ".RData"))
+
+kable(tdata, digits = 2)
+
+```
+
+```{r, fig.align = 'center', out.width = '75%', fig.cap = "Predicted power for lo pcap w/o calf scenario"}
+
+include_graphics(paste0("./Figures/CombinedPowerPlots_", type, ".png"))
 ```
 
