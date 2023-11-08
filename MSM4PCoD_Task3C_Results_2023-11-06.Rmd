@@ -364,3 +364,29 @@ kable(tdata, digits = 2)
 include_graphics(paste0("./Figures/CombinedPowerPlots_", type, ".png"))
 ```
 
+\newpage
+
+## 10 y Low CV EY w/Calf
+
+```{r}
+
+type <- "10yLowCV_EY"
+ids <- c("NULL_10yLowCV_EY_wCalfData_2023-11-02", "D50AB_10yLowCV_EY_wCalfData_2023-11-02")
+
+for (i in 1:length(ids)){
+  plotPower(ids[i])
+}
+
+combinePower(ids, type)
+
+load(paste0("./Results/CombinedPower_", type, ".RData"))
+
+kable(tdata, digits = 2)
+
+```
+
+```{r, fig.align = 'center', out.width = '75%', fig.cap = "Predicted power for 10y low CV EY w/calf scenario"}
+
+include_graphics(paste0("./Figures/CombinedPowerPlots_", type, ".png"))
+```
+
