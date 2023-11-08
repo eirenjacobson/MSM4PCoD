@@ -17,8 +17,9 @@ runNimble <- function(pars, simdata,
     cr <- simdata$CRData
     crstart <- min(cr$Year)
     crend <- max(cr$Year)
-    ncryears <- length(crstart:crend)
-  
+    ncryears <- length(unique(cr$Year))
+    cryears <- unique(cr$Year)
+    
     caphist <- complete(cr, ID, Year = crstart:crend, fill = list(Cap = 0)) %>% 
       pivot_wider(id_cols = ID, names_from = Year, values_from = Cap)
   
@@ -35,15 +36,14 @@ runNimble <- function(pars, simdata,
   
   #Kdefault <- max(simdata$LTData$Nhat, simdata$PAMData$Nhat*2)
   Ndefault <- simPop(K = 200, nyears = pars$nyears)  
-  # stopping here -- need to figure out how to get info out of list if NULL
-  # or make different versions of data list depending on which data are provided?
+
   nimbleData <- list(ltestN = simdata$LTData$Nhat, ltestSDlog = simdata$LTData$SDLog, 
                      Y = Y, 
                      pamestN = simdata$PAMData$Nhat, pamestSDlog = simdata$PAMData$SDLog)
 
     nimbleConstants <- list(cyear = pars$cyear, nyears = pars$nyears, S0 = 0.85, S1 = 0.9, AFR = 10,
                           AJU = 3, ASA = 5, AMAX = 50, fmax = 0.2,  
-                          z = 2.39, ncryears = ncryears, Nind = nrow(Y), Find = Find, 
+                          z = 2.39, ncryears = ncryears, cryears = cryears, Nind = nrow(Y), Find = Find, 
                           ltyears = simdata$LTData$Year, nltyears = length(simdata$LTData$Year),
                           pamyears = simdata$PAMData$Year, npamyears = length(simdata$PAMData$Year),
                           K_lower = 75,#round(min(c(simdata$LTData$Nhat, simdata$PAMData$Nhat*2))), 
